@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Why Your Website Is Not Ranking in Karachi</title>
+  <desc id="desc">Local SEO featured image for the Owais Ahmed Sheikh SEO blog.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#020905"/>
+      <stop offset=".48" stop-color="#061a0c"/>
+      <stop offset="1" stop-color="#02100b"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".26" cy=".34" r=".58">
+      <stop stop-color="#31ff8c" stop-opacity=".42"/>
+      <stop offset=".48" stop-color="#23e77b" stop-opacity=".09"/>
+      <stop offset="1" stop-color="#23e77b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="line" x1="0" x2="1">
+      <stop stop-color="#31ff8c"/>
+      <stop offset="1" stop-color="#37d9ff"/>
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#glow)"/>
+  <path d="M0 514c172-74 282-42 402-8 176 50 354 93 798-62v231H0Z" fill="#061b0d" opacity=".82"/>
+  <g opacity=".08" stroke="#31ff8c">
+    <path d="M0 120h1200M0 240h1200M0 360h1200M0 480h1200"/>
+    <path d="M120 0v675M240 0v675M360 0v675M480 0v675M600 0v675M720 0v675M840 0v675M960 0v675M1080 0v675"/>
+  </g>
+  <rect x="76" y="86" width="262" height="262" rx="56" fill="#092112" stroke="#31ff8c" stroke-opacity=".22"/>
+  <g fill="none" stroke="url(#line)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    <path d="M110 140c0-31 25-56 56-56s56 25 56 56c0 42-56 98-56 98s-56-56-56-98Z"/><circle cx="166" cy="140" r="18"/>
+  </g>
+  <rect x="392" y="86" width="236" height="40" rx="20" fill="#12351e" stroke="#31ff8c" stroke-opacity=".35"/>
+  <circle cx="420" cy="106" r="7" fill="#31ff8c"/>
+  <text x="438" y="112" class="kicker">Local SEO</text>
+  <text x="392" y="156" class="title">Why Your Website Is Not</text>
+<text x="392" y="204" class="title">Ranking in Karachi</text>
+  <text x="392" y="340" class="meta">Owais Ahmed Sheikh</text>
+  <text x="392" y="382" class="sub">website not ranking in Karachi</text>
+  <path d="M392 458h410" stroke="url(#line)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M392 506h260" stroke="#dff8e7" stroke-width="10" stroke-linecap="round" opacity=".78"/>
+  <path d="M392 554h330" stroke="#31ff8c" stroke-width="10" stroke-linecap="round" opacity=".76"/>
+  <text x="392" y="616" class="brand">SEO guides, content, and search work for Pakistan businesses</text>
+  <style>
+    .kicker{font:800 20px Manrope,Arial,sans-serif;fill:#31ff8c;letter-spacing:.08em;text-transform:uppercase}
+    .title{font:900 46px Manrope,Arial,sans-serif;fill:#f8fff9}
+    .meta{font:800 26px Manrope,Arial,sans-serif;fill:#31ff8c}
+    .sub{font:700 23px Manrope,Arial,sans-serif;fill:#c7d8cc}
+    .brand{font:700 20px Manrope,Arial,sans-serif;fill:#89a893}
+  </style>
+</svg>

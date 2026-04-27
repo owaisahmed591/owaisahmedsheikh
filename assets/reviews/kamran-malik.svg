@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+<title id="title">Kamran Malik review avatar</title>
+<desc id="desc">Stylized portrait avatar for Kamran Malik testimonial.</desc>
+<defs>
+<linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#10251a"/>
+<stop offset="100%" stop-color="#06110b"/>
+</linearGradient>
+<linearGradient id="accent" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#31ff8c"/>
+<stop offset="100%" stop-color="#3ec5ff"/>
+</linearGradient>
+</defs>
+<rect width="160" height="160" rx="40" fill="url(#bg)"/>
+<circle cx="80" cy="78" r="57" fill="rgba(62,197,255,.06)"/>
+<rect x="28" y="116" width="104" height="24" rx="12" fill="#0f2217"/>
+<path d="M48 127c6-18 18-29 32-29s25 11 31 29" fill="#1d2c25"/>
+<rect x="62" y="96" width="36" height="24" rx="12" fill="#cf9e79"/>
+<path d="M46 61c0-23 12-35 34-35 22 0 34 12 34 35v14c0 21-15 36-34 36S46 96 46 75V61z" fill="#d7a784"/>
+<path d="M44 64c4-23 16-35 36-35 18 0 31 9 36 28-8-2-15-5-22-10-10 8-26 14-50 17z" fill="#101513"/>
+<circle cx="66" cy="75" r="4" fill="#111"/>
+<circle cx="94" cy="75" r="4" fill="#111"/>
+<path d="M63 89c4 5 10 8 17 8s13-3 17-8" stroke="#955a43" stroke-linecap="round" stroke-width="4" fill="none"/>
+<path d="M59 90c5 8 12 11 21 11 8 0 15-3 21-11" stroke="#231816" stroke-linecap="round" stroke-width="5" fill="none"/>
+<path d="M58 56c8-4 15-6 22-6 8 0 16 2 23 6" stroke="#0c100f" stroke-linecap="round" stroke-width="9" fill="none"/>
+<rect x="53" y="121" width="54" height="6" rx="3" fill="url(#accent)"/>
+<path d="M114 47h16M122 39v16" stroke="#3ec5ff" stroke-linecap="round" stroke-width="3"/>
+</svg>

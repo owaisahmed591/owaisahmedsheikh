@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+<title id="title">Clinic manager review avatar</title>
+<desc id="desc">Stylized portrait avatar for a clinic manager testimonial.</desc>
+<defs>
+<linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#132a26"/>
+<stop offset="100%" stop-color="#07100d"/>
+</linearGradient>
+<linearGradient id="accent" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#5af8ff"/>
+<stop offset="100%" stop-color="#31ff8c"/>
+</linearGradient>
+</defs>
+<rect width="160" height="160" rx="40" fill="url(#bg)"/>
+<circle cx="80" cy="76" r="58" fill="rgba(90,248,255,.06)"/>
+<rect x="28" y="116" width="104" height="24" rx="12" fill="#10231f"/>
+<path d="M49 126c5-18 18-29 31-29 13 0 27 11 31 29" fill="#d6f5f7"/>
+<path d="M61 96h38l-3 23H64z" fill="#f5f7f8"/>
+<path d="M44 76V59c0-21 13-33 36-33 23 0 36 12 36 33v17c0 21-16 35-36 35S44 97 44 76z" fill="#ddb291"/>
+<path d="M44 63c1-23 13-35 35-35 21 0 33 10 37 29-12-2-22-8-28-18-10 11-24 18-44 20v4z" fill="#202726"/>
+<path d="M67 81c4 3 8 5 13 5s9-2 13-5" stroke="#a56d55" stroke-linecap="round" stroke-width="4" fill="none"/>
+<circle cx="66" cy="72" r="4" fill="#111"/>
+<circle cx="94" cy="72" r="4" fill="#111"/>
+<path d="M56 121h48" stroke="url(#accent)" stroke-linecap="round" stroke-width="6"/>
+<path d="M80 107v28" stroke="#31ff8c" stroke-width="4"/>
+<path d="M66 121h28" stroke="#31ff8c" stroke-width="4"/>
+</svg>

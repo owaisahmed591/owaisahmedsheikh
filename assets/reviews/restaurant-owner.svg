@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+<title id="title">Restaurant owner review avatar</title>
+<desc id="desc">Stylized portrait avatar for a restaurant owner testimonial.</desc>
+<defs>
+<linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#12301d"/>
+<stop offset="100%" stop-color="#06110a"/>
+</linearGradient>
+<linearGradient id="accent" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#31ff8c"/>
+<stop offset="100%" stop-color="#14b86f"/>
+</linearGradient>
+</defs>
+<rect width="160" height="160" rx="40" fill="url(#bg)"/>
+<circle cx="80" cy="80" r="58" fill="rgba(49,255,140,.08)"/>
+<rect x="28" y="116" width="104" height="24" rx="12" fill="#0d2015"/>
+<path d="M50 126c6-19 21-29 30-29s24 10 30 29" fill="#203327"/>
+<rect x="60" y="94" width="40" height="30" rx="14" fill="#d1a07b"/>
+<path d="M56 58c0-17 11-29 24-29h9c18 0 27 11 27 28v17c0 23-16 37-36 37S44 96 44 74V58z" fill="#d6a887"/>
+<path d="M52 56c6-20 20-28 34-28 15 0 30 7 37 21l-1 13c-5-2-10-5-14-9-11 7-25 11-44 12l-12 8V56z" fill="#101413"/>
+<path d="M61 84c4 7 10 11 19 11 8 0 15-4 19-11" stroke="#9e5f46" stroke-linecap="round" stroke-width="4" fill="none"/>
+<circle cx="65" cy="74" r="4" fill="#111"/>
+<circle cx="95" cy="74" r="4" fill="#111"/>
+<path d="M61 85c5 8 12 12 20 12s15-4 19-12" stroke="#281a16" stroke-linecap="round" stroke-width="5" fill="none"/>
+<path d="M57 63c8-4 16-5 23-5s17 2 23 7" stroke="#0b0d0c" stroke-linecap="round" stroke-width="9" fill="none"/>
+<rect x="52" y="124" width="56" height="6" rx="3" fill="url(#accent)" opacity=".9"/>
+</svg>

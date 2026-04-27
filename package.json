@@ -1,0 +1,14 @@
+{
+  "name": "owais-seo-static-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static SEO site with Git-based blog content management.",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node scripts/generate-blog-images.js && node scripts/build-blog.js",
+    "build:blog": "node scripts/generate-blog-images.js && node scripts/build-blog.js",
+    "audit:cms": "node scripts/audit-cms-config.js",
+    "audit:content": "node scripts/audit-blog-content.js",
+    "preview": "node scripts/static-server.js"
+  }
+}

@@ -1,0 +1,103 @@
+backend:
+  name: github
+  repo: owaisahmed591/owaisahmedsheikh
+  branch: main
+
+local_backend: true
+publish_mode: editorial_workflow
+media_folder: "uploads/blog"
+public_folder: "/uploads/blog"
+site_url: "https://owaisahmedsheikh.netlify.app"
+display_url: "https://owaisahmedsheikh.netlify.app"
+logo_url: "/brand-mark.svg"
+
+collections:
+  - name: "blog"
+    label: "Blog Posts"
+    label_singular: "Blog Post"
+    folder: "content/blog"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    preview_path: "blog/{{slug}}"
+    summary: "{{title}}"
+    sortable_fields: ["date", "updated", "title", "category"]
+    view_filters:
+      - label: "Published"
+        field: "draft"
+        pattern: false
+      - label: "Drafts"
+        field: "draft"
+        pattern: true
+      - label: "Featured"
+        field: "featured"
+        pattern: true
+    fields:
+      - { label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Draft posts are hidden from the public blog build." }
+      - { label: "Featured Post", name: "featured", widget: "boolean", default: false }
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Slug", name: "slug", widget: "string", pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "Use lowercase words separated by hyphens."] }
+      - { label: "Category", name: "category", widget: "select", options: ["Local SEO", "Technical SEO", "On-Page SEO", "Content Writing", "AI SEO", "Ecommerce SEO", "SEO Reporting", "Case Study", "SEO Strategy"], default: "Local SEO" }
+      - { label: "Tags", name: "tags", widget: "list", required: false, field: { label: "Tag", name: "tag", widget: "string" }, hint: "Shown on blog detail pages and useful for topical grouping." }
+      - { label: "Focus Keyword", name: "focusKeyword", widget: "string", required: false }
+      - { label: "Secondary Keywords", name: "secondaryKeywords", widget: "list", required: false, field: { label: "Keyword", name: "keyword", widget: "string" } }
+      - { label: "Excerpt", name: "excerpt", widget: "text", hint: "Short human summary for blog cards and social previews." }
+      - { label: "Meta Title", name: "metaTitle", widget: "string", hint: "Keep under about 60 characters." }
+      - { label: "Meta Description", name: "metaDescription", widget: "text", hint: "Keep under about 155 characters." }
+      - { label: "Hero Title", name: "heroTitle", widget: "string", required: false, hint: "Optional. Uses Title if empty." }
+      - { label: "Hero Accent Text", name: "heroAccent", widget: "string", required: false }
+      - { label: "Publish Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Last Updated", name: "updated", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Reading Time", name: "readingTime", widget: "number", value_type: "int", min: 1, default: 6 }
+      - { label: "Featured Image URL or Upload Path", name: "image", widget: "string", required: false, hint: "Paste a licensed external image URL or an uploaded path like /uploads/blog/file.jpg. Use real 1200x630 or larger images." }
+      - { label: "Image Alt Text", name: "imageAlt", widget: "string", required: false }
+      - { label: "Image Credit", name: "imageCredit", widget: "string", required: false, hint: "Optional. Example: Photo by Name on Unsplash." }
+      - { label: "Trust Note", name: "trustNote", widget: "text", required: false, hint: "E-E-A-T note shown near the article hero." }
+      - { label: "Related Posts / Internal Links", name: "relatedPosts", widget: "relation", collection: "blog", value_field: "slug", search_fields: ["title", "category"], display_fields: ["title"], multiple: true, required: false, hint: "Pick internal articles that should appear in the related articles box." }
+      - label: "FAQ Section"
+        name: "faqItems"
+        widget: "list"
+        required: false
+        summary: "{{fields.question}}"
+        hint: "Optional questions shown near the end of the article. These also generate FAQ schema when filled."
+        fields:
+          - { label: "Question", name: "question", widget: "string" }
+          - { label: "Answer", name: "answer", widget: "string", hint: "Keep this direct. You can expand the full explanation in the article body." }
+      - { label: "Show Newsletter Box", name: "showNewsletter", widget: "boolean", default: true, required: false }
+      - { label: "Newsletter Title", name: "newsletterTitle", widget: "string", required: false, default: "Want practical SEO tips in your inbox?" }
+      - { label: "Newsletter Text", name: "newsletterText", widget: "text", required: false, default: "Get clear SEO, content, and local search advice written for business owners. No spam." }
+      - { label: "CTA Title", name: "ctaTitle", widget: "string", default: "Want help with this on your website?" }
+      - { label: "CTA Text", name: "ctaText", widget: "text", default: "Send me your site and I will tell you the first SEO fixes I would make." }
+      - { label: "CTA Button Text", name: "ctaButtonText", widget: "string", default: "Get a Free SEO Audit" }
+      - { label: "CTA URL", name: "ctaUrl", widget: "string", default: "/free-seo-audit" }
+      - { label: "Body", name: "body", widget: "markdown", buttons: ["bold", "italic", "link", "heading-two", "heading-three", "quote", "bulleted-list", "numbered-list"], editor_components: ["image"], hint: "Use H2, H3, and short paragraphs. The table of contents is generated from H2 headings automatically." }
+  - name: "comments"
+    label: "Blog Comments"
+    label_singular: "Blog Comment"
+    folder: "content/comments"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    summary: "{{name}} on {{postSlug}}"
+    sortable_fields: ["date", "postSlug", "approved", "name"]
+    view_filters:
+      - label: "Needs Approval"
+        field: "approved"
+        pattern: false
+      - label: "Approved"
+        field: "approved"
+        pattern: true
+    fields:
+      - { label: "Approved", name: "approved", widget: "boolean", default: false, hint: "Only approved comments appear on the public site after the blog build runs." }
+      - { label: "Blog Post", name: "postSlug", widget: "relation", collection: "blog", value_field: "slug", search_fields: ["title", "slug"], display_fields: ["title"] }
+      - { label: "Name", name: "name", widget: "string" }
+      - { label: "Business or Role", name: "business", widget: "string", required: false }
+      - { label: "Website", name: "website", widget: "string", required: false }
+      - { label: "Email", name: "email", widget: "string", required: false, hint: "Used for moderation only. It is not shown publicly." }
+      - { label: "Phone or WhatsApp", name: "phone", widget: "string", required: false, hint: "Used for moderation only. It is not shown publicly." }
+      - { label: "Comment Type", name: "commentType", widget: "select", options: ["Question", "Experience", "Feedback", "Result"], default: "Question" }
+      - { label: "Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Rating", name: "rating", widget: "number", value_type: "int", min: 1, max: 5, default: 5, required: false }
+      - { label: "Comment", name: "body", widget: "text" }

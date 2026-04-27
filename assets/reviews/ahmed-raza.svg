@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+<title id="title">Ahmed Raza review avatar</title>
+<desc id="desc">Stylized portrait avatar for Ahmed Raza testimonial.</desc>
+<defs>
+<linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#11291a"/>
+<stop offset="100%" stop-color="#060f09"/>
+</linearGradient>
+<linearGradient id="accent" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#31ff8c"/>
+<stop offset="100%" stop-color="#17c964"/>
+</linearGradient>
+</defs>
+<rect width="160" height="160" rx="40" fill="url(#bg)"/>
+<circle cx="80" cy="76" r="57" fill="rgba(49,255,140,.06)"/>
+<rect x="26" y="116" width="108" height="24" rx="12" fill="#0e2015"/>
+<path d="M49 127c4-18 18-29 31-29 12 0 26 11 31 29" fill="#233129"/>
+<rect x="62" y="95" width="36" height="28" rx="13" fill="#cb9774"/>
+<path d="M44 60c0-23 13-35 36-35 24 0 36 12 36 35v13c0 22-15 37-36 37-20 0-36-15-36-37V60z" fill="#d8a785"/>
+<path d="M46 61c4-21 18-31 35-31 17 0 30 7 38 24-8-1-17-4-23-10-13 9-28 14-50 17z" fill="#0f1512"/>
+<path d="M61 84c4 7 10 10 19 10 8 0 15-3 20-10" stroke="#965a45" stroke-linecap="round" stroke-width="4" fill="none"/>
+<circle cx="65" cy="73" r="4" fill="#111"/>
+<circle cx="95" cy="73" r="4" fill="#111"/>
+<path d="M62 87c5 8 11 11 18 11 8 0 14-3 19-11" stroke="#231916" stroke-linecap="round" stroke-width="5" fill="none"/>
+<path d="M57 60c8-5 16-7 24-7 8 0 17 2 24 7" stroke="#101313" stroke-linecap="round" stroke-width="8" fill="none"/>
+<rect x="50" y="121" width="60" height="6" rx="3" fill="url(#accent)" opacity=".95"/>
+</svg>

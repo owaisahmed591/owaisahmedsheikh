@@ -1,0 +1,19 @@
+{
+  "name": "Owais Ahmed Sheikh - SEO Expert Karachi",
+  "short_name": "Owais SEO",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#040904",
+  "background_color": "#040904",
+  "display": "standalone"
+}

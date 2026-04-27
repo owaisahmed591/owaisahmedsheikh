@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+<title id="title">Sara Iqbal review avatar</title>
+<desc id="desc">Stylized portrait avatar for Sara Iqbal testimonial.</desc>
+<defs>
+<linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#112622"/>
+<stop offset="100%" stop-color="#050d0a"/>
+</linearGradient>
+<linearGradient id="accent" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#5eead4"/>
+<stop offset="100%" stop-color="#31ff8c"/>
+</linearGradient>
+</defs>
+<rect width="160" height="160" rx="40" fill="url(#bg)"/>
+<circle cx="80" cy="76" r="58" fill="rgba(94,234,212,.06)"/>
+<rect x="28" y="116" width="104" height="24" rx="12" fill="#10211b"/>
+<path d="M48 127c6-18 18-29 32-29 13 0 25 11 31 29" fill="#1e3130"/>
+<rect x="62" y="97" width="36" height="23" rx="11" fill="#d4a283"/>
+<path d="M45 64c0-24 13-37 35-37 22 0 35 13 35 37v10c0 23-15 37-35 37S45 97 45 74V64z" fill="#ddb190"/>
+<path d="M42 67c3-27 16-40 39-40 21 0 35 12 38 36-11-4-19-11-25-20-8 11-26 20-52 24z" fill="#19221f"/>
+<circle cx="66" cy="76" r="4" fill="#111"/>
+<circle cx="94" cy="76" r="4" fill="#111"/>
+<path d="M64 89c4 5 9 8 16 8 6 0 12-3 16-8" stroke="#9a604a" stroke-linecap="round" stroke-width="4" fill="none"/>
+<path d="M50 51c7-16 18-23 31-23 14 0 25 7 33 21" stroke="#111715" stroke-linecap="round" stroke-width="10" fill="none"/>
+<path d="M54 121h52" stroke="url(#accent)" stroke-linecap="round" stroke-width="6"/>
+<path d="M114 117l10 10-10 10" stroke="#31ff8c" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+</svg>
