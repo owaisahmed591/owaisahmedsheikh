@@ -46,6 +46,23 @@ npm run preview
 
 Open `http://127.0.0.1:4174/` for the local preview.
 
+## Cloudflare Admin Login
+
+The Cloudflare version uses Sveltia CMS with the GitHub backend.
+
+For now, use the `Sign In with Token` option on the admin login screen. Do not use the normal GitHub OAuth popup, because that tries Netlify's OAuth service unless a separate Cloudflare OAuth worker is configured.
+
+To log in:
+
+1. Open `/admin/`.
+2. Click `Sign In with Token`.
+3. Generate a GitHub personal access token from the link Sveltia gives you.
+4. Use a fine-grained token limited to `owaisahmed591/owaisahmedsheikh`.
+5. Give it repository `Contents: Read and write`.
+6. Paste the token into Sveltia CMS.
+
+After that, you can create and edit blog posts from the admin panel.
+
 ## AI Assistant
 
 The chat widget calls `/api/ai-assistant` on Netlify. The OpenAI key stays server-side and is never exposed in browser JavaScript.

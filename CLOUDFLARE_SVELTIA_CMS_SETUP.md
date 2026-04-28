@@ -77,6 +77,15 @@ https://yourdomain.com/admin/
 
 Sveltia CMS will authenticate with GitHub and edit the Markdown files in the repository.
 
+On Cloudflare, use the `Sign In with Token` option unless a separate Sveltia CMS Authenticator worker has been configured. The regular GitHub OAuth popup falls back to Netlify's OAuth service and can show `Not Found` on Cloudflare-hosted sites.
+
+For the token method, create a fine-grained GitHub personal access token limited to:
+
+```text
+Repository: owaisahmed591/owaisahmedsheikh
+Permission: Contents read and write
+```
+
 The admin config is already set for:
 
 ```text

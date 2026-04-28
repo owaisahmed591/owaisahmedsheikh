@@ -7,8 +7,8 @@ local_backend: true
 publish_mode: editorial_workflow
 media_folder: "uploads/blog"
 public_folder: "/uploads/blog"
-site_url: "https://owaisahmedsheikh.netlify.app"
-display_url: "https://owaisahmedsheikh.netlify.app"
+site_url: "https://owaisahmedsheikh-preview.pages.dev"
+display_url: "https://owaisahmedsheikh-preview.pages.dev"
 logo_url: "/brand-mark.svg"
 
 collections:
