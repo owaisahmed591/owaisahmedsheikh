@@ -6,6 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "node scripts/generate-blog-images.js && node scripts/build-blog.js",
+    "build:cloudflare": "npm run build && node scripts/prepare-cloudflare-output.js",
     "build:blog": "node scripts/generate-blog-images.js && node scripts/build-blog.js",
     "audit:cms": "node scripts/audit-cms-config.js",
     "audit:content": "node scripts/audit-blog-content.js",

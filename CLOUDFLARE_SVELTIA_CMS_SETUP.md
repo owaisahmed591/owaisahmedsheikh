@@ -8,6 +8,8 @@ This site is ready for daily blog publishing from `/admin/`.
 - Blog posts are stored in `content/blog/*.md`.
 - Approved comments are stored in `content/comments/*.md`.
 - `npm run build` regenerates the blog index, blog detail pages, homepage recent articles, and sitemap.
+- `npm run build:cloudflare` creates a clean `dist/` folder for Cloudflare Pages.
+- `/api/ai-assistant` is available as a Cloudflare Pages Function in `functions/api/ai-assistant.ts`.
 - Each blog post has editable SEO fields, featured image URL/path, category, tags, FAQ items, related posts, newsletter copy, CTA, and Markdown body.
 
 ## GitHub Setup
@@ -38,13 +40,32 @@ Use these build settings:
 
 ```text
 Framework preset: None
-Build command: npm run build
-Build output directory: /
+Build command: npm run build:cloudflare
+Build output directory: dist
 Root directory: /
 Node version: 20 or newer
 ```
 
-If Cloudflare asks for an output directory and does not accept `/`, use `.`.
+Add these environment variables in Cloudflare Pages if you want the AI assistant to use OpenAI:
+
+```text
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-5.4-nano
+```
+
+If `OPENAI_API_KEY` is missing, the chatbot still works with a safe fallback answer.
+
+## Cloudflare Direct Upload Preview
+
+If you want to upload a temporary preview from this machine instead of connecting GitHub first, run:
+
+```powershell
+npm run build:cloudflare
+$env:CLOUDFLARE_API_TOKEN="your_cloudflare_api_token"
+npx wrangler pages deploy dist --project-name owaisahmedsheikh-preview --branch preview
+```
+
+In this desktop environment, `wrangler` cannot open an interactive login page, so it needs `CLOUDFLARE_API_TOKEN`.
 
 ## Admin Login
 
@@ -76,7 +97,7 @@ owaisahmed591/owaisahmedsheikh
 ```powershell
 npm run audit:cms
 npm run audit:content
-npm run build
+npm run build:cloudflare
 ```
 
 ## Notes
