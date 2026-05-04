@@ -4,153 +4,451 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Blog Admin | Owais Ahmed Sheikh</title>
+  <title>Content Studio | Owais Ahmed Sheikh</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <style>
-    :root {
-      --bg: #020a05;
-      --panel: rgba(7, 18, 10, .82);
-      --panel2: rgba(13, 32, 17, .82);
-      --border: rgba(49, 255, 140, .2);
-      --text: #f5fff8;
-      --muted: #9fb3a5;
-      --accent: #31ff8c;
-      --accent2: #00d4ff;
-      --shadow: 0 28px 80px rgba(0, 0, 0, .38);
-    }
-
-    * { box-sizing: border-box; }
-    html, body { min-height: 100%; }
-    body {
-      margin: 0;
-      font-family: Manrope, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 18% 18%, rgba(49, 255, 140, .14), transparent 28%),
-        radial-gradient(circle at 82% 72%, rgba(0, 212, 255, .09), transparent 26%),
-        linear-gradient(135deg, #020a05, #051008 52%, #020806);
-      color: var(--text);
-    }
-
-    .admin-shell {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 28px;
-      pointer-events: none;
-    }
-
-    .admin-card {
-      width: min(720px, 100%);
-      border: 1px solid var(--border);
-      border-radius: 32px;
-      background: linear-gradient(145deg, var(--panel), var(--panel2));
-      box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, .06);
-      padding: clamp(28px, 5vw, 48px);
-      overflow: hidden;
-      position: relative;
-    }
-
-    .admin-card::before {
-      content: "";
-      position: absolute;
-      inset: 0 0 auto;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(49, 255, 140, .8), transparent);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 900;
-      letter-spacing: -.03em;
-      margin-bottom: 34px;
-    }
-
-    .brand-mark {
-      width: 42px;
-      height: 42px;
-      border-radius: 13px;
-      display: grid;
-      place-items: center;
-      color: #001507;
-      background: linear-gradient(135deg, var(--accent), #7cffb7);
-      box-shadow: 0 12px 36px rgba(49, 255, 140, .28);
-      font-weight: 950;
-    }
-
-    h1 {
-      margin: 0 0 14px;
-      font-size: clamp(34px, 6vw, 62px);
-      line-height: 1.02;
-      letter-spacing: -.06em;
-    }
-
-    h1 span {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.8;
-      max-width: 620px;
-    }
-
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 30px;
-    }
-
-    .step {
-      border: 1px solid rgba(49, 255, 140, .16);
-      border-radius: 18px;
-      padding: 16px;
-      background: rgba(255, 255, 255, .03);
-    }
-
-    .step strong {
-      display: block;
-      color: var(--accent);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      margin-bottom: 6px;
-    }
-
-    .step span {
-      color: #d9efe0;
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    @media (max-width: 720px) {
-      .steps { grid-template-columns: 1fr; }
-    }
-
-    body:has([data-sveltia-cms]) .admin-shell { display: none; }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">
+  <link rel="stylesheet" href="/admin/studio.css">
 </head>
-<body>
-  <div class="admin-shell" aria-hidden="true">
-    <div class="admin-card">
-      <div class="brand"><span class="brand-mark">O</span>Owais Ahmed Sheikh</div>
-      <h1>Blog admin for <span>SEO content</span></h1>
-      <p>Manage daily blog posts, SEO titles, meta descriptions, categories, author notes, CTAs, related posts, and featured images from one panel.</p>
-      <div class="steps">
-        <div class="step"><strong>Write</strong><span>Create a post with title, keyword, excerpt, body, and image.</span></div>
-        <div class="step"><strong>Optimize</strong><span>Add SEO fields, trust notes, related posts, and CTA text.</span></div>
-        <div class="step"><strong>Publish</strong><span>Commit changes, run the blog build, and deploy the static pages.</span></div>
+<body class="cms-simple-mode">
+  <section class="cms-auth-gate" id="authGate" hidden>
+    <form class="cms-auth-card" id="authForm">
+      <p class="cms-eyebrow" id="authEyebrow">Secure Admin</p>
+      <h1 id="authTitle">Sign in to Content Studio</h1>
+      <p id="authIntro">Use your admin username and password to edit, publish, and rebuild blog content.</p>
+      <label>
+        Username
+        <input id="authUsername" name="username" autocomplete="username" required>
+      </label>
+      <label>
+        Password
+        <span class="cms-password-field">
+          <input id="authPassword" name="password" type="password" autocomplete="current-password" required>
+          <button id="authTogglePassword" type="button" aria-label="Show password">Show</button>
+        </span>
+      </label>
+      <button class="cms-button cms-button-primary" id="authSubmit" type="submit">Sign in</button>
+      <p class="cms-auth-message" id="authMessage" role="status"></p>
+    </form>
+  </section>
+
+  <div class="cms-shell">
+    <aside class="cms-sidebar">
+      <a class="cms-brand" href="/admin/">
+        <span class="cms-brand-mark">O</span>
+        <span>
+          <strong>Content Studio</strong>
+          <small>Owais Ahmed Sheikh</small>
+        </span>
+      </a>
+
+      <nav class="cms-nav" aria-label="Admin sections">
+        <button class="cms-nav-item is-active" type="button" data-view="editor">Posts</button>
+        <button class="cms-nav-item cms-auto-managed" type="button" data-view="hub">Blog Hub</button>
+        <button class="cms-nav-item" type="button" data-view="media">Media Library</button>
+        <button class="cms-nav-item" type="button" data-view="links">Interlinking</button>
+        <a class="cms-nav-item cms-auto-managed" href="/admin/cms.html">Advanced CMS</a>
+        <a class="cms-nav-item" href="/" target="_blank" rel="noopener">View Site</a>
+      </nav>
+
+      <section class="cms-sidebar-posts" aria-label="Post list">
+        <div class="cms-sidebar-posts-head">
+          <strong>Posts</strong>
+          <button class="cms-sidebar-new" id="sidebarNewPostButton" type="button">New</button>
+        </div>
+        <div class="cms-search">
+          <input id="postSearch" type="search" placeholder="Search posts">
+        </div>
+        <div class="cms-post-list" id="postList"></div>
+      </section>
+
+      <div class="cms-help">
+        <strong>Publishing flow</strong>
+        <span>Write, upload images, add internal links, check SEO, save, and rebuild locally.</span>
       </div>
+    </aside>
+
+    <main class="cms-main">
+      <header class="cms-topbar">
+        <div class="cms-topbar-context">
+          <p class="cms-eyebrow">Writing Studio</p>
+          <h1 id="screenTitle">Posts</h1>
+          <span class="cms-top-status" id="topPostStatus">No post selected</span>
+        </div>
+        <div class="cms-actions">
+          <span class="cms-status" id="studioStatus">Loading...</span>
+          <div class="cms-mode-switch" aria-label="Editor mode">
+            <button class="is-active" id="writeModeButton" type="button" data-editor-mode="write">Write</button>
+            <button id="previewModeButton" type="button" data-editor-mode="preview">Preview</button>
+            <button id="splitModeButton" type="button" data-editor-mode="split">Split</button>
+          </div>
+          <button class="cms-button cms-button-ghost" id="topPreviewButton" type="button">Preview</button>
+          <button class="cms-button cms-button-ghost" id="saveDraftButton" type="button">Save Draft</button>
+          <button class="cms-button cms-button-ghost" id="publishPostButton" type="button">Publish</button>
+          <details class="cms-more-menu">
+            <summary class="cms-button cms-button-ghost">More</summary>
+            <div class="cms-more-list">
+              <button id="newPostButton" type="button">New Post</button>
+              <button id="savePostButton" type="button" disabled>Save & Rebuild</button>
+              <button id="duplicatePostButton" type="button">Duplicate Post</button>
+              <button id="deletePostButton" type="button" disabled>Delete Post</button>
+              <button id="openFrontendButton" type="button">Open Frontend</button>
+              <button id="logoutButton" type="button">Log Out</button>
+            </div>
+          </details>
+        </div>
+      </header>
+
+      <section class="cms-view is-active" id="editorView">
+        <div class="cms-layout">
+          <section class="cms-editor-panel" aria-label="Post editor">
+            <div class="cms-empty" id="emptyState">
+              <h2>Select a post to start editing</h2>
+              <p>Use the center canvas for writing articles. Related posts, blog index placement, TOC, share buttons, and schema are generated automatically.</p>
+            </div>
+
+            <div class="cms-writing-workspace" id="writingWorkspace">
+            <form class="cms-editor is-hidden" id="postForm">
+              <textarea class="cms-title-input" id="titleInput" name="title" rows="2" placeholder="Title" autocomplete="off"></textarea>
+              <textarea class="cms-excerpt-input" id="excerptInput" placeholder="Subtitle or short excerpt"></textarea>
+              <div class="cms-permalink">
+                <span>Slug</span>
+                <input id="slugInput" name="slug" autocomplete="off">
+                <a id="openPostLink" href="#" target="_blank" rel="noopener">Open</a>
+              </div>
+              <div class="cms-editor-meta-strip">
+                <span id="editorCategoryBadge">Category</span>
+                <span id="editorStatusBadge">Draft</span>
+                <span id="editorSavedAt">Not saved yet</span>
+              </div>
+              <figure class="cms-editor-featured" id="editorImagePreview"></figure>
+
+              <div class="cms-block-toolbar cms-editor-toolbar" aria-label="Editor tools">
+                <span>Quill article editor. Paste from docs or type <kbd>/</kbd> for blocks</span>
+                <button type="button" id="insertBlockButton">+ Insert block</button>
+                <button type="button" data-template="howto">How-to Template</button>
+                <button type="button" data-template="seo">SEO Guide Template</button>
+                <button type="button" id="linkButton">Internal Link</button>
+              </div>
+
+              <div class="cms-structure-note">
+                <strong>Recommended structure:</strong>
+                Introduction, clear sections, at least one engagement block, one primary CTA near the middle or end.
+              </div>
+
+              <div class="cms-editor-stage">
+                <div class="cms-floating-toolbar is-hidden" id="floatingToolbar" aria-label="Formatting toolbar">
+                  <button type="button" data-format="bold">B</button>
+                  <button type="button" data-format="italic">I</button>
+                  <button type="button" data-format="link">Link</button>
+                  <button type="button" data-format="h2">H2</button>
+                  <button type="button" data-format="h3">H3</button>
+                  <button type="button" data-format="ul">Bullets</button>
+                  <button type="button" data-format="ol">Numbered</button>
+                  <button type="button" data-format="quote">Quote</button>
+                  <button type="button" data-format="highlight">Highlight</button>
+                  <button type="button" data-format="code">Code</button>
+                  <button type="button" data-format="clear">Clear</button>
+                </div>
+                <div class="cms-slash-menu is-hidden" id="slashMenu" role="menu" aria-label="Insert block"></div>
+                <div class="cms-block-list cms-document-canvas" id="bodyEditor" aria-label="Article editor"></div>
+              </div>
+            </form>
+
+            <section class="cms-live-preview is-hidden" id="livePreviewPanel" aria-label="Article preview">
+              <div class="cms-preview-controls">
+                <span>Preview</span>
+                <button class="is-active" id="desktopPreviewButton" type="button">Desktop</button>
+                <button id="mobilePreviewButton" type="button">Mobile</button>
+                <button id="themePreviewButton" type="button">Dark</button>
+                <button id="openPreviewNewTabButton" type="button">Open in New Tab</button>
+              </div>
+              <div class="cms-live-preview-frame" id="livePreviewFrame"></div>
+            </section>
+            </div>
+          </section>
+
+          <aside class="cms-settings-panel" aria-label="Post settings">
+            <details class="cms-settings-card" open>
+              <summary>Publish</summary>
+              <label class="cms-toggle"><input id="draftInput" type="checkbox"><span>Save as draft</span></label>
+              <label class="cms-toggle"><input id="featuredInput" type="checkbox"><span>Featured post</span></label>
+              <div class="cms-grid-2">
+                <label>Published <input id="dateInput" type="date"></label>
+                <label>Updated <input id="updatedInput" type="date"></label>
+              </div>
+              <div class="cms-publish-checklist" id="publishChecklist"></div>
+            </details>
+
+            <div class="cms-score-card">
+              <div>
+                <strong id="seoScore">0</strong>
+                <span>SEO</span>
+              </div>
+              <div>
+                <strong id="wordCount">0</strong>
+                <span>words</span>
+              </div>
+              <div>
+                <strong id="headingCount">0</strong>
+                <span>heads</span>
+              </div>
+              <div>
+                <strong id="qualityScore">0</strong>
+                <span>quality</span>
+              </div>
+            </div>
+
+            <details class="cms-settings-card">
+              <summary>Assistant</summary>
+              <div class="cms-checklist" id="uxAssistantList"></div>
+            </details>
+
+            <details class="cms-settings-card">
+              <summary>SEO</summary>
+              <label>Focus keyword <input id="focusKeywordInput" type="text"></label>
+              <label>Meta title <input id="metaTitleInput" type="text" maxlength="70"></label>
+              <label>Meta description <textarea id="metaDescriptionInput" maxlength="180"></textarea></label>
+              <label>Reading time <input id="readingTimeInput" type="number" min="1" value="6"></label>
+              <div class="cms-checklist" id="seoChecklist"></div>
+            </details>
+
+            <details class="cms-settings-card cms-auto-managed">
+              <summary>Hero & Trust Box</summary>
+              <label>Hero title <input id="heroTitleInput" type="text"></label>
+              <label>Hero accent text <input id="heroAccentInput" type="text"></label>
+              <label>Trust note <textarea id="trustNoteInput"></textarea></label>
+            </details>
+
+            <details class="cms-settings-card">
+              <summary>Media</summary>
+              <label>Image URL <input id="imageInput" type="url"></label>
+              <label>Alt text <input id="imageAltInput" type="text"></label>
+              <div class="cms-row">
+                <button class="cms-small-button" id="uploadFeaturedButton" type="button">Upload</button>
+                <button class="cms-small-button" id="insertFeaturedButton" type="button">Insert in Body</button>
+              </div>
+              <div class="cms-image-preview" id="imagePreview"></div>
+            </details>
+
+            <details class="cms-settings-card">
+              <summary>Category & Tags</summary>
+              <label>Category
+                <select id="categoryInput">
+                  <option>Local SEO</option>
+                  <option>Technical SEO</option>
+                  <option>On-Page SEO</option>
+                  <option>Content Writing</option>
+                  <option>AI SEO</option>
+                  <option>Ecommerce SEO</option>
+                  <option>SEO Reporting</option>
+                  <option>Case Study</option>
+                  <option>SEO Strategy</option>
+                </select>
+              </label>
+              <label>Tags <input id="tagsInput" type="text" placeholder="Tag one, tag two"></label>
+            </details>
+
+            <details class="cms-settings-card cms-auto-managed">
+              <summary>Related Articles</summary>
+              <div class="cms-related-list" id="relatedPostsList"></div>
+            </details>
+
+            <details class="cms-settings-card">
+              <summary>CTA</summary>
+              <label>Global primary CTA <input id="globalPrimaryCtaInput" type="text" placeholder="Get a Free SEO Audit"></label>
+              <label>Global secondary CTA <input id="globalSecondaryCtaInput" type="text" placeholder="Subscribe to SEO tips"></label>
+              <label>CTA title <input id="ctaTitleInput" type="text"></label>
+              <label>CTA text <textarea id="ctaTextInput"></textarea></label>
+              <label>CTA button text <input id="ctaButtonTextInput" type="text"></label>
+              <label>CTA URL <input id="ctaUrlInput" type="text"></label>
+            </details>
+
+            <details class="cms-settings-card cms-auto-managed">
+              <summary>Sidebar</summary>
+              <label class="cms-toggle"><input id="showTocInput" type="checkbox"><span>Show table of contents</span></label>
+              <label class="cms-toggle"><input id="showShareInput" type="checkbox"><span>Show share buttons</span></label>
+              <label class="cms-toggle"><input id="showRelatedInput" type="checkbox"><span>Show related articles</span></label>
+              <label class="cms-toggle"><input id="showSidebarCtaInput" type="checkbox"><span>Show sidebar CTA</span></label>
+            </details>
+
+            <details class="cms-settings-card cms-auto-managed">
+              <summary>Advanced</summary>
+              <label>Canonical URL <input id="canonicalInput" type="url"></label>
+              <label class="cms-toggle"><input id="noindexInput" type="checkbox"><span>Noindex this post</span></label>
+              <label>Schema type
+                <select id="schemaTypeInput">
+                  <option value="Article">Article</option>
+                  <option value="BlogPosting">BlogPosting</option>
+                  <option value="HowTo">HowTo</option>
+                  <option value="FAQPage">FAQPage</option>
+                </select>
+              </label>
+              <button class="cms-small-button" id="schemaPreviewButton" type="button">Refresh Schema Preview</button>
+              <div class="cms-schema-status" id="schemaPreviewStatus"></div>
+              <pre class="cms-schema-preview" id="schemaPreviewOutput">Schema preview appears here.</pre>
+              <label>Author <input id="authorInput" type="text" placeholder="Owais Ahmed Sheikh"></label>
+            </details>
+
+            <details class="cms-settings-card cms-auto-managed">
+              <summary>Design System</summary>
+              <label>Typography scale
+                <select id="typographyScaleInput">
+                  <option value="comfortable">Comfortable</option>
+                  <option value="compact">Compact</option>
+                  <option value="large">Large</option>
+                </select>
+              </label>
+              <label>Theme
+                <select id="articleThemeInput">
+                  <option value="dark">Dark editorial</option>
+                  <option value="light">Light editorial</option>
+                </select>
+              </label>
+              <label>Accent color <input id="accentColorInput" type="color" value="#2ff28a"></label>
+            </details>
+
+            <details class="cms-settings-card cms-auto-managed">
+              <summary>Newsletter</summary>
+              <label class="cms-toggle"><input id="showNewsletterInput" type="checkbox"><span>Show newsletter block</span></label>
+              <label>Newsletter title <input id="newsletterTitleInput" type="text"></label>
+              <label>Newsletter text <textarea id="newsletterTextInput"></textarea></label>
+            </details>
+
+            <details class="cms-settings-card">
+              <summary>FAQ</summary>
+              <div class="cms-faq-list" id="faqItemsList"></div>
+              <button class="cms-small-button" id="addFaqButton" type="button">Add FAQ</button>
+            </details>
+
+            <details class="cms-settings-card cms-auto-managed">
+              <summary>Visual Framework</summary>
+              <label class="cms-toggle"><input id="showFrameworkInput" type="checkbox"><span>Show framework block</span></label>
+              <label>Section label <input id="frameworkLabelInput" type="text"></label>
+              <label>Title <input id="frameworkTitleInput" type="text"></label>
+              <label>Intro <textarea id="frameworkIntroInput"></textarea></label>
+              <label>Core label <input id="frameworkCoreLabelInput" type="text"></label>
+              <label>Core title <input id="frameworkCoreTitleInput" type="text"></label>
+              <label>Core text <textarea id="frameworkCoreTextInput"></textarea></label>
+              <label>Nodes <textarea id="frameworkNodesInput" placeholder="Guide: Service page copy&#10;Proof: Case studies"></textarea></label>
+              <label>Steps <textarea id="frameworkStepsInput" placeholder="Choose the money page | Start with the service page that should generate leads."></textarea></label>
+            </details>
+          </aside>
+        </div>
+      </section>
+
+      <section class="cms-view" id="mediaView">
+        <div class="cms-management">
+          <div class="cms-management-head">
+            <div>
+              <h2>Media Library</h2>
+              <p>Upload images and insert them into articles or set them as featured images.</p>
+            </div>
+            <button class="cms-button" id="libraryUploadButton" type="button">Upload Image</button>
+          </div>
+          <div class="cms-media-grid" id="mediaGrid"></div>
+        </div>
+      </section>
+
+      <section class="cms-view" id="linksView">
+        <div class="cms-management">
+          <div class="cms-management-head">
+            <div>
+              <h2>Interlinking</h2>
+              <p>Search site pages and articles, then insert internal links into the current article.</p>
+            </div>
+            <input class="cms-inline-search" id="linkSearch" type="search" placeholder="Search pages and posts">
+          </div>
+          <div class="cms-link-grid" id="linkGrid"></div>
+        </div>
+      </section>
+
+      <section class="cms-view" id="hubView">
+        <div class="cms-management">
+          <div class="cms-management-head">
+            <div>
+              <h2>Blog Hub Controls</h2>
+              <p>Control the blog index featured guides, highlight cards, pattern interrupts, mid-page CTA, and service-business spotlight.</p>
+            </div>
+            <div class="cms-row">
+              <a class="cms-button cms-button-ghost" href="/blog/" target="_blank" rel="noopener">Open Blog Hub</a>
+              <button class="cms-button" id="saveBlogHubButton" type="button">Save Blog Hub</button>
+            </div>
+          </div>
+
+          <div class="cms-hub-grid">
+            <section class="cms-hub-card">
+              <h3>Featured Guides</h3>
+              <p>Select the two large editorial cards near the top of the page.</p>
+              <div class="cms-choice-list" id="hubFeaturedPostsList"></div>
+            </section>
+
+            <section class="cms-hub-card">
+              <h3>Highlight Cards</h3>
+              <p>Choose posts that should become larger recommended cards in the main grid.</p>
+              <div class="cms-choice-list" id="hubHighlightPostsList"></div>
+            </section>
+
+            <section class="cms-hub-card">
+              <h3>Insight Panel</h3>
+              <label>Title <input id="hubInsightTitleInput" type="text"></label>
+              <label>Description <textarea id="hubInsightDescriptionInput"></textarea></label>
+              <div class="cms-grid-2">
+                <label>Button text <input id="hubInsightButtonTextInput" type="text"></label>
+                <label>Button URL <input id="hubInsightButtonUrlInput" type="text"></label>
+              </div>
+            </section>
+
+            <section class="cms-hub-card">
+              <h3>Mid-page CTA</h3>
+              <label>Title <input id="hubMidCtaTitleInput" type="text"></label>
+              <label>Description <textarea id="hubMidCtaDescriptionInput"></textarea></label>
+              <div class="cms-grid-2">
+                <label>Button text <input id="hubMidCtaButtonTextInput" type="text"></label>
+                <label>Button URL <input id="hubMidCtaButtonUrlInput" type="text"></label>
+              </div>
+            </section>
+
+            <section class="cms-hub-card cms-hub-card-wide">
+              <h3>Category Spotlight</h3>
+              <div class="cms-grid-2">
+                <label>Label <input id="hubSpotlightLabelInput" type="text"></label>
+                <label>Title <input id="hubSpotlightTitleInput" type="text"></label>
+              </div>
+              <p>Pick three posts for the “most useful for service businesses” panel.</p>
+              <div class="cms-choice-list" id="hubSpotlightPostsList"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="cms-modal is-hidden" id="linkModal" role="dialog" aria-modal="true" aria-labelledby="linkModalTitle">
+    <div class="cms-modal-card">
+      <header><h2 id="linkModalTitle">Insert internal link</h2><button type="button" data-close-modal>Close</button></header>
+      <input id="modalLinkSearch" type="search" placeholder="Search articles and pages">
+      <div class="cms-link-results" id="modalLinkResults"></div>
+      <label>Or paste URL <input id="customLinkInput" type="url" placeholder="/services or https://example.com"></label>
+      <button class="cms-button" id="applyCustomLinkButton" type="button">Apply Link</button>
     </div>
   </div>
-  <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js" data-cfasync="false" defer></script>
+
+  <div class="cms-modal is-hidden" id="imageModal" role="dialog" aria-modal="true" aria-labelledby="imageModalTitle">
+    <div class="cms-modal-card">
+      <header><h2 id="imageModalTitle">Add image</h2><button type="button" data-close-modal>Close</button></header>
+      <label>Upload image <input id="uploadInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"></label>
+      <label>Or paste image URL <input id="modalImageUrl" type="url"></label>
+      <label>Alt text <input id="modalImageAlt" type="text"></label>
+      <div class="cms-row">
+        <button class="cms-button" id="insertImageButton" type="button">Insert Image</button>
+        <button class="cms-button cms-button-ghost" id="setFeaturedImageButton" type="button">Set Featured</button>
+      </div>
+      <div class="cms-media-grid compact" id="modalMediaGrid"></div>
+    </div>
+  </div>
+
+  <script src="/admin/studio.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+  <script src="/admin/quill-editor.js"></script>
 </body>
 </html>

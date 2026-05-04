@@ -10,6 +10,15 @@
     "build:blog": "node scripts/generate-blog-images.js && node scripts/build-blog.js",
     "audit:cms": "node scripts/audit-cms-config.js",
     "audit:content": "node scripts/audit-blog-content.js",
+    "check:deploy": "node scripts/check-deploy-readiness.js",
+    "check:production-env": "node scripts/check-production-env.js",
+    "deploy:cloudflare": "npm run check:deploy && wrangler pages deploy dist --project-name owaisahmedsheikh-preview --branch main",
     "preview": "node scripts/static-server.js"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "wrangler": "^4.87.0"
   }
 }

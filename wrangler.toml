@@ -1,3 +1,17 @@
 name = "owaisahmedsheikh"
 compatibility_date = "2026-04-28"
 pages_build_output_dir = "dist"
+
+[vars]
+SITE_URL = "https://owaisahmedsheikh-preview.pages.dev"
+GITHUB_REPO = "owaisahmed591/owaisahmedsheikh"
+GITHUB_BRANCH = "main"
+
+[[kv_namespaces]]
+binding = "ADMIN_KV"
+id = "ae3b6882ca3243e3a6c900ff43bbc372"
+
+# Production admin backend:
+# - Add an ADMIN_KV binding in Cloudflare Pages project settings.
+# - Optional: add a MEDIA_BUCKET R2 binding for production media uploads.
+# - Add GITHUB_TOKEN, GITHUB_REPO, GITHUB_BRANCH, and SITE_URL as environment variables.

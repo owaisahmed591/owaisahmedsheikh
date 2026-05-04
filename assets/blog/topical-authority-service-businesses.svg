@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
-  <title id="title">How to Build Topical Authority With Service Pages and Blogs</title>
+  <title id="title">FAQs and examples</title>
   <desc id="desc">Content Writing featured image for the Owais Ahmed Sheikh SEO blog.</desc>
   <defs>
     <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
@@ -38,9 +38,7 @@
   <rect x="392" y="86" width="236" height="40" rx="20" fill="#12351e" stroke="#31ff8c" stroke-opacity=".35"/>
   <circle cx="420" cy="106" r="7" fill="#31ff8c"/>
   <text x="438" y="112" class="kicker">Content Writing</text>
-  <text x="392" y="156" class="title">How to Build Topical</text>
-<text x="392" y="204" class="title">Authority With Service Pages</text>
-<text x="392" y="252" class="title">and Blogs</text>
+  <text x="392" y="156" class="title">FAQs and examples</text>
   <text x="392" y="340" class="meta">Owais Ahmed Sheikh</text>
   <text x="392" y="382" class="sub">topical authority SEO</text>
   <path d="M392 458h410" stroke="url(#line)" stroke-width="10" stroke-linecap="round"/>

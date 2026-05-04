@@ -19,6 +19,9 @@ image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format
 imageAlt: "Topical authority SEO strategy for service businesses"
 trustNote: "This guide is based on service-page planning, blog mapping, and internal linking work for local businesses and SEO service websites."
 relatedPosts: ["seo-content-writing-for-business-pages", "internal-linking-strategy-service-websites"]
+showNewsletter: true
+newsletterTitle: "Want practical SEO tips in your inbox?"
+newsletterText: "Get clear SEO, content, and local search advice written for business owners. No spam."
 ctaTitle: "Need a content plan that supports rankings?"
 ctaText: "I can map your service pages, blog topics, and internal links so your site covers the right SEO topics properly."
 ctaButtonText: "View Content Writing Service"
@@ -28,6 +31,29 @@ faqItems:
     answer: "Yes. Good SEO content answers search intent in clear language. It should help readers understand the offer, not repeat keywords unnaturally."
   - question: "What makes a business page strong?"
     answer: "A strong page explains the service, the buyer problem, the process, proof, pricing direction where possible, FAQs, and the next step."
+showFramework: true
+frameworkLabel: "Visual Framework"
+frameworkTitle: "A simple topical authority map"
+frameworkIntro: "Build one strong service page first, then surround it with helpful articles, proof, FAQs, and internal links. The goal is to make the next click obvious for both readers and search engines."
+frameworkCoreLabel: "Core service page"
+frameworkCoreTitle: "SEO Content Writing"
+frameworkCoreText: "The page that should convert qualified readers."
+frameworkNodes:
+  - label: "Guide"
+    title: "Service page copy"
+  - label: "Guide"
+    title: "Internal linking"
+  - label: "Proof"
+    title: "Case studies"
+  - label: "Support"
+    title: "FAQs and examples"
+frameworkSteps:
+  - title: "Choose the money page"
+    text: "Start with the service page that should generate leads."
+  - title: "Map supporting questions"
+    text: "Turn repeated buyer questions into useful articles."
+  - title: "Link every page intentionally"
+    text: "Connect guides, proof, and service pages with clear next steps."
 ---
 
 Topical authority means your site covers a subject deeply enough to be trusted.
@@ -102,13 +128,13 @@ A better approach is to make one useful improvement, measure it, and then move t
 
 ## How this connects to revenue
 
-topical authority should help the business get more qualified visitors, clearer leads, and better trust. If the work does not support one of those outcomes, it is probably not the next priority.
+Topical authority should help the business get more qualified visitors, clearer leads, and better trust. If the work does not support one of those outcomes, it is probably not the next priority.
 
 For a local business in Pakistan, that might mean more calls from Google Maps. For an ecommerce store, it might mean more category page clicks. For a service company, it might mean better consultation requests from people who already understand the offer.
 
 ## What to do next
 
-Start small. choose one main service, list the supporting questions around it, then link every useful article back to the main service page.
+Start small. Choose one main service, list the supporting questions around it, then link every useful article back to the main service page.
 
 After that, check Search Console and user behavior. If impressions improve but clicks stay weak, improve the title and meta description. If clicks improve but leads do not, improve the page copy, proof, and CTA.
 

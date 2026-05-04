@@ -13,8 +13,8 @@ logo_url: "/brand-mark.svg"
 
 collections:
   - name: "blog"
-    label: "Blog Posts"
-    label_singular: "Blog Post"
+    label: "Blog Studio"
+    label_singular: "Article"
     folder: "content/blog"
     create: true
     slug: "{{slug}}"
@@ -34,31 +34,33 @@ collections:
         field: "featured"
         pattern: true
     fields:
-      - { label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Draft posts are hidden from the public blog build." }
-      - { label: "Featured Post", name: "featured", widget: "boolean", default: false }
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Slug", name: "slug", widget: "string", pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "Use lowercase words separated by hyphens."] }
       - { label: "Category", name: "category", widget: "select", options: ["Local SEO", "Technical SEO", "On-Page SEO", "Content Writing", "AI SEO", "Ecommerce SEO", "SEO Reporting", "Case Study", "SEO Strategy"], default: "Local SEO" }
-      - { label: "Tags", name: "tags", widget: "list", required: false, field: { label: "Tag", name: "tag", widget: "string" }, hint: "Shown on blog detail pages and useful for topical grouping." }
-      - { label: "Focus Keyword", name: "focusKeyword", widget: "string", required: false }
-      - { label: "Secondary Keywords", name: "secondaryKeywords", widget: "list", required: false, field: { label: "Keyword", name: "keyword", widget: "string" } }
+      - { label: "Publish Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Last Updated", name: "updated", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Draft", name: "draft", widget: "boolean", default: false, hint: "Turn this on when the article should stay hidden from the public site." }
+      - { label: "Featured Post", name: "featured", widget: "boolean", default: false }
       - { label: "Excerpt", name: "excerpt", widget: "text", hint: "Short human summary for blog cards and social previews." }
+      - { label: "Body", name: "body", widget: "richtext", editor_components: ["image", "seo-tip", "example-box", "article-cta"], hint: "Use the toolbar for headings, lists, quotes, links, images, and reusable SEO blocks. H2 headings automatically build the table of contents." }
+      - { label: "Featured Image URL or Upload Path", name: "image", widget: "string", required: false, hint: "Paste a licensed external image URL or an uploaded path like /uploads/blog/file.jpg. Use real 1200x630 or larger images." }
+      - { label: "Image Alt Text", name: "imageAlt", widget: "string", required: false }
+      - { label: "Image Credit", name: "imageCredit", widget: "string", required: false, hint: "Optional. Example: Photo by Name on Unsplash." }
+      - { label: "Focus Keyword", name: "focusKeyword", widget: "string", required: false }
+      - { label: "Secondary Keywords", name: "secondaryKeywords", widget: "list", required: false, collapsed: true, field: { label: "Keyword", name: "keyword", widget: "string" } }
+      - { label: "Tags", name: "tags", widget: "list", required: false, collapsed: true, field: { label: "Tag", name: "tag", widget: "string" }, hint: "Shown on blog detail pages and useful for topical grouping." }
       - { label: "Meta Title", name: "metaTitle", widget: "string", hint: "Keep under about 60 characters." }
       - { label: "Meta Description", name: "metaDescription", widget: "text", hint: "Keep under about 155 characters." }
       - { label: "Hero Title", name: "heroTitle", widget: "string", required: false, hint: "Optional. Uses Title if empty." }
       - { label: "Hero Accent Text", name: "heroAccent", widget: "string", required: false }
-      - { label: "Publish Date", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
-      - { label: "Last Updated", name: "updated", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "Reading Time", name: "readingTime", widget: "number", value_type: "int", min: 1, default: 6 }
-      - { label: "Featured Image URL or Upload Path", name: "image", widget: "string", required: false, hint: "Paste a licensed external image URL or an uploaded path like /uploads/blog/file.jpg. Use real 1200x630 or larger images." }
-      - { label: "Image Alt Text", name: "imageAlt", widget: "string", required: false }
-      - { label: "Image Credit", name: "imageCredit", widget: "string", required: false, hint: "Optional. Example: Photo by Name on Unsplash." }
       - { label: "Trust Note", name: "trustNote", widget: "text", required: false, hint: "E-E-A-T note shown near the article hero." }
       - { label: "Related Posts / Internal Links", name: "relatedPosts", widget: "relation", collection: "blog", value_field: "slug", search_fields: ["title", "category"], display_fields: ["title"], multiple: true, required: false, hint: "Pick internal articles that should appear in the related articles box." }
       - label: "FAQ Section"
         name: "faqItems"
         widget: "list"
         required: false
+        collapsed: true
         summary: "{{fields.question}}"
         hint: "Optional questions shown near the end of the article. These also generate FAQ schema when filled."
         fields:
@@ -71,7 +73,6 @@ collections:
       - { label: "CTA Text", name: "ctaText", widget: "text", default: "Send me your site and I will tell you the first SEO fixes I would make." }
       - { label: "CTA Button Text", name: "ctaButtonText", widget: "string", default: "Get a Free SEO Audit" }
       - { label: "CTA URL", name: "ctaUrl", widget: "string", default: "/free-seo-audit" }
-      - { label: "Body", name: "body", widget: "markdown", buttons: ["bold", "italic", "link", "heading-two", "heading-three", "quote", "bulleted-list", "numbered-list"], editor_components: ["image"], hint: "Use H2, H3, and short paragraphs. The table of contents is generated from H2 headings automatically." }
   - name: "comments"
     label: "Blog Comments"
     label_singular: "Blog Comment"

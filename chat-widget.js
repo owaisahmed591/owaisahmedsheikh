@@ -829,6 +829,12 @@
     panel.style.setProperty('z-index', '2147482999', 'important');
 
     if (nudge) {
+      if (shouldSuppressNudge()) {
+        nudge.classList.remove('open');
+        nudge.style.setProperty('display', 'none', 'important');
+        return;
+      }
+      nudge.style.removeProperty('display');
       nudge.style.setProperty('position', 'fixed', 'important');
       nudge.style.setProperty('left', 'auto', 'important');
       nudge.style.setProperty('right', right, 'important');
@@ -837,6 +843,22 @@
       nudge.style.setProperty('margin', '0', 'important');
       nudge.style.setProperty('z-index', '2147482998', 'important');
     }
+  }
+
+  function isArticlePage() {
+    if (!document.body || !document.body.classList) {
+      return false;
+    }
+    return Array.prototype.some.call(document.body.classList, function (name) {
+      return name.indexOf('article-theme-') === 0;
+    });
+  }
+
+  function shouldSuppressNudge() {
+    if (!document.body || !document.body.classList) {
+      return false;
+    }
+    return isArticlePage() || document.body.classList.contains('blog-hub-page');
   }
 
   function mount() {
@@ -912,7 +934,7 @@
     }
 
     function showNudge() {
-      if (!nudge || isOpen || getSessionValue('oas_nudge_seen') === '1') {
+      if (!nudge || isOpen || shouldSuppressNudge() || getSessionValue('oas_nudge_seen') === '1') {
         return;
       }
       nudge.classList.add('open');
@@ -920,7 +942,7 @@
     }
 
     function scheduleNudge() {
-      if (!nudge || getSessionValue('oas_nudge_seen') === '1') {
+      if (!nudge || shouldSuppressNudge() || getSessionValue('oas_nudge_seen') === '1') {
         return;
       }
       clearNudgeTimer();
