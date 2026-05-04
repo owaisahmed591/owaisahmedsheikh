@@ -369,7 +369,7 @@ function validatePassword(password: string) {
 }
 
 function schemaFromPost(env: Env, post: any) {
-  const siteUrl = String(env.SITE_URL || 'https://owaisahmedsheikh.netlify.app').replace(/\/+$/, '');
+  const siteUrl = String(env.SITE_URL || 'https://owaisahmedsheikh-preview.pages.dev').replace(/\/+$/, '');
   const slug = slugify(post.slug || post.title);
   const canonical = post.canonical || `${siteUrl}/blog/${slug}`;
   const faqs = (post.faqItems || []).filter((item: any) => item.question && item.answer);

@@ -6,7 +6,7 @@ const contentDir = path.join(root, 'content', 'blog');
 const commentsDir = path.join(root, 'content', 'comments');
 const blogIndexSettingsPath = path.join(root, 'content', 'blog-index.json');
 const blogDir = path.join(root, 'blog');
-const siteUrl = normalizeSiteUrl(process.env.SITE_URL || 'https://owaisahmedsheikh.netlify.app');
+const siteUrl = normalizeSiteUrl(process.env.SITE_URL || 'https://owaisahmedsheikh-preview.pages.dev');
 const today = new Date().toISOString().slice(0, 10);
 
 const author = {
@@ -1196,7 +1196,9 @@ ${commonScripts()}
 function updateSitemap(posts) {
   const sitemapPath = path.join(root, 'sitemap.xml');
   const existing = fs.existsSync(sitemapPath) ? fs.readFileSync(sitemapPath, 'utf8') : '';
-  const locs = [...existing.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+  const locs = [...existing.matchAll(/<loc>([^<]+)<\/loc>/g)]
+    .map(match => normalizeSitemapLoc(match[1]))
+    .filter(Boolean);
   const keep = locs.filter(loc => !/\/blog(\/|$)/.test(loc));
   const indexablePosts = posts.filter(post => !post.noindex);
   const urls = [
@@ -1219,6 +1221,20 @@ function updateSitemap(posts) {
   fs.writeFileSync(sitemapPath, xml);
 }
 
+function normalizeSitemapLoc(loc) {
+  try {
+    const url = new URL(loc);
+    return `${siteUrl}${url.pathname.replace(/\/$/, '')}${url.search}`;
+  } catch {
+    return '';
+  }
+}
+
+function updateRobots() {
+  const robots = `User-agent: *\nAllow: /\nSitemap: ${siteUrl}/sitemap.xml\n`;
+  fs.writeFileSync(path.join(root, 'robots.txt'), robots);
+}
+
 function main() {
   const posts = readPosts();
   const commentsByPost = readComments();
@@ -1227,6 +1243,7 @@ function main() {
   posts.forEach(post => buildPost(post, posts, commentsByPost));
   updateHomepageRecentPosts(posts);
   updateSitemap(posts);
+  updateRobots();
   console.log(`Built ${posts.length} blog posts and blog index.`);
 }
 
