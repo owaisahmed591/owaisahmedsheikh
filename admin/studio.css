@@ -3044,6 +3044,12 @@ body.cms-auth-locked .cms-shell {
   box-shadow: 0 28px 80px rgba(16, 24, 20, 0.14);
 }
 
+.cms-auth-card label[hidden],
+.cms-auth-card input[hidden],
+.cms-auth-secondary [hidden] {
+  display: none !important;
+}
+
 .cms-auth-card h1 {
   margin: 0;
   color: #101814;
@@ -3119,6 +3125,33 @@ body.cms-auth-locked .cms-shell {
 .cms-auth-card .cms-button {
   min-height: 48px;
   justify-content: center;
+}
+
+.cms-auth-secondary {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: -4px;
+}
+
+.cms-link-button {
+  min-height: 36px;
+  padding: 0 8px;
+  color: #1d1d1f;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.cms-link-button:hover,
+.cms-link-button:focus-visible {
+  background: #f5f5f7;
+  outline: none;
 }
 
 .cms-auth-message {

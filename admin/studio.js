@@ -17,7 +17,9 @@ const state = {
   auth: {
     authenticated: false,
     setupRequired: false,
-    csrfToken: ''
+    csrfToken: '',
+    mode: new URLSearchParams(window.location.search).get('reset') ? 'reset' : 'login',
+    resetToken: new URLSearchParams(window.location.search).get('reset') || ''
   }
 };
 
@@ -28,10 +30,20 @@ const els = {
   authEyebrow: document.querySelector('#authEyebrow'),
   authTitle: document.querySelector('#authTitle'),
   authIntro: document.querySelector('#authIntro'),
+  authUsernameLabel: document.querySelector('#authUsernameLabel'),
+  authUsernameText: document.querySelector('#authUsernameText'),
   authUsername: document.querySelector('#authUsername'),
+  authEmailLabel: document.querySelector('#authEmailLabel'),
+  authEmail: document.querySelector('#authEmail'),
+  authPasswordLabel: document.querySelector('#authPasswordLabel'),
+  authPasswordText: document.querySelector('#authPasswordText'),
   authPassword: document.querySelector('#authPassword'),
+  authConfirmPasswordLabel: document.querySelector('#authConfirmPasswordLabel'),
+  authConfirmPassword: document.querySelector('#authConfirmPassword'),
   authTogglePassword: document.querySelector('#authTogglePassword'),
   authSubmit: document.querySelector('#authSubmit'),
+  forgotPassword: document.querySelector('#forgotPasswordButton'),
+  backToLogin: document.querySelector('#backToLoginButton'),
   authMessage: document.querySelector('#authMessage'),
   status: document.querySelector('#studioStatus'),
   screenTitle: document.querySelector('#screenTitle'),
@@ -180,7 +192,69 @@ function setAuthChecking(checking) {
   if (els.authLoading) els.authLoading.hidden = !checking;
 }
 
-function setAuthGate(visible, setupRequired = false) {
+function setAuthFieldState(input, visible, required) {
+  if (!input) return;
+  const label = input.closest('label');
+  if (label) label.hidden = !visible;
+  input.required = Boolean(required && visible);
+  input.disabled = !visible;
+}
+
+function setAuthMode(mode, setupRequired = false) {
+  const activeMode = setupRequired ? 'setup' : mode;
+  state.auth.mode = activeMode;
+
+  const isLogin = activeMode === 'login';
+  const isSetup = activeMode === 'setup';
+  const isForgot = activeMode === 'forgot';
+  const isReset = activeMode === 'reset';
+
+  els.authEyebrow.textContent = isSetup ? 'First-time setup' : isForgot ? 'Password recovery' : isReset ? 'Change password' : 'Secure Admin';
+  els.authTitle.textContent = isSetup
+    ? 'Create your admin account'
+    : isForgot
+      ? 'Reset your Content Studio password'
+      : isReset
+        ? 'Choose a new password'
+        : 'Sign in to Content Studio';
+  els.authIntro.textContent = isSetup
+    ? 'Create the first admin user. Add a recovery email so you can reset the password later.'
+    : isForgot
+      ? 'Enter your admin username or recovery email. If it matches, a secure reset link will be emailed.'
+      : isReset
+        ? 'Enter a strong new password. Reset links expire after 30 minutes.'
+        : 'Use your admin username or recovery email to edit, publish, and rebuild blog content.';
+
+  if (els.authUsernameText) {
+    els.authUsernameText.textContent = isForgot ? 'Username or recovery email' : 'Username or email';
+  }
+  if (els.authPasswordText) {
+    els.authPasswordText.textContent = isSetup || isReset ? 'New password' : 'Password';
+  }
+
+  setAuthFieldState(els.authUsername, isLogin || isSetup || isForgot, true);
+  setAuthFieldState(els.authEmail, isSetup, false);
+  setAuthFieldState(els.authPassword, isLogin || isSetup || isReset, true);
+  setAuthFieldState(els.authConfirmPassword, isSetup || isReset, isSetup || isReset);
+  els.authPassword.autocomplete = isLogin ? 'current-password' : 'new-password';
+  if (els.authConfirmPassword) els.authConfirmPassword.autocomplete = 'new-password';
+
+  els.authSubmit.textContent = isSetup
+    ? 'Create Admin Account'
+    : isForgot
+      ? 'Send reset email'
+      : isReset
+        ? 'Change password'
+        : 'Sign in';
+  if (els.forgotPassword) els.forgotPassword.hidden = !isLogin;
+  if (els.backToLogin) els.backToLogin.hidden = isLogin || isSetup;
+  setAuthMessage('');
+
+  const focusTarget = isReset ? els.authPassword : els.authUsername;
+  setTimeout(() => focusTarget?.focus(), 0);
+}
+
+function setAuthGate(visible, setupRequired = false, mode = '') {
   if (!els.authGate) return;
   setAuthChecking(false);
   els.authGate.hidden = !visible;
@@ -188,14 +262,8 @@ function setAuthGate(visible, setupRequired = false) {
   document.body.classList.toggle('cms-authenticated', !visible);
   state.auth.setupRequired = setupRequired;
   if (visible) {
-    els.authEyebrow.textContent = setupRequired ? 'First-time setup' : 'Secure Admin';
-    els.authTitle.textContent = setupRequired ? 'Create your admin account' : 'Sign in to Content Studio';
-    els.authIntro.textContent = setupRequired
-      ? 'Create the first admin user. The password is stored as a scrypt hash, not plain text.'
-      : 'Use your admin username and password to edit, publish, and rebuild blog content.';
-    els.authSubmit.textContent = setupRequired ? 'Create Admin Account' : 'Sign in';
-    els.authPassword.autocomplete = setupRequired ? 'new-password' : 'current-password';
-    setTimeout(() => els.authUsername.focus(), 0);
+    const nextMode = mode || (state.auth.resetToken ? 'reset' : setupRequired ? 'setup' : state.auth.mode || 'login');
+    setAuthMode(nextMode, setupRequired);
   }
 }
 
@@ -1634,30 +1702,90 @@ async function initializeAdmin() {
 
 async function submitAuth(event) {
   event.preventDefault();
-  const username = els.authUsername.value.trim();
-  const password = els.authPassword.value;
-  if (!username || !password) {
-    setAuthMessage('Username and password are required.', true);
+  const mode = state.auth.setupRequired ? 'setup' : state.auth.mode || 'login';
+  const username = els.authUsername?.value.trim() || '';
+  const email = els.authEmail?.value.trim() || '';
+  const password = els.authPassword?.value || '';
+  const confirmPassword = els.authConfirmPassword?.value || '';
+
+  if ((mode === 'login' || mode === 'setup' || mode === 'forgot') && !username) {
+    setAuthMessage(mode === 'forgot' ? 'Enter your username or recovery email.' : 'Username is required.', true);
     return;
   }
+
+  if ((mode === 'login' || mode === 'setup' || mode === 'reset') && !password) {
+    setAuthMessage('Password is required.', true);
+    return;
+  }
+
+  if ((mode === 'setup' || mode === 'reset') && password !== confirmPassword) {
+    setAuthMessage('Passwords do not match.', true);
+    return;
+  }
+
   els.authSubmit.disabled = true;
-  setAuthMessage(state.auth.setupRequired ? 'Creating admin account...' : 'Signing in...');
-  const response = await fetch(state.auth.setupRequired ? '/api/admin/setup' : '/api/admin/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-  const data = await response.json().catch(() => ({}));
-  els.authSubmit.disabled = false;
-  if (!response.ok) {
-    setAuthMessage(data.error || 'Authentication failed.', true);
-    return;
+  setAuthMessage(
+    mode === 'setup'
+      ? 'Creating admin account...'
+      : mode === 'forgot'
+        ? 'Sending reset email...'
+        : mode === 'reset'
+          ? 'Changing password...'
+          : 'Signing in...'
+  );
+
+  try {
+    const endpoint = mode === 'setup'
+      ? '/api/admin/setup'
+      : mode === 'forgot'
+        ? '/api/admin/password-reset/request'
+        : mode === 'reset'
+          ? '/api/admin/password-reset/confirm'
+          : '/api/admin/login';
+    const payload = mode === 'forgot'
+      ? { identifier: username }
+      : mode === 'reset'
+        ? { token: state.auth.resetToken, password }
+        : { username, email, password };
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    els.authSubmit.disabled = false;
+    if (!response.ok) {
+      setAuthMessage(data.error || 'Authentication failed.', true);
+      return;
+    }
+
+    if (mode === 'forgot') {
+      setAuthMessage(data.message || 'If an admin account matches, a reset email will be sent.');
+      return;
+    }
+
+    if (mode === 'reset') {
+      state.auth.resetToken = '';
+      if (window.location.search.includes('reset=')) {
+        window.history.replaceState({}, document.title, '/admin/');
+      }
+      els.authPassword.value = '';
+      if (els.authConfirmPassword) els.authConfirmPassword.value = '';
+      setAuthMode('login', false);
+      setAuthMessage(data.message || 'Password changed. Sign in with your new password.');
+      return;
+    }
+
+    els.authPassword.value = '';
+    if (els.authConfirmPassword) els.authConfirmPassword.value = '';
+    applyAuthSession(data);
+    setAuthMessage('');
+    setStatus('Loading publishing workspace...');
+    await loadLibrary();
+  } catch (_error) {
+    els.authSubmit.disabled = false;
+    setAuthMessage('Could not reach the admin server. Try again.', true);
   }
-  els.authPassword.value = '';
-  applyAuthSession(data);
-  setAuthMessage('');
-  setStatus('Loading publishing workspace...');
-  await loadLibrary();
 }
 
 async function logout() {
@@ -2129,6 +2257,16 @@ els.authTogglePassword.addEventListener('click', () => {
   const visible = els.authPassword.type === 'text';
   els.authPassword.type = visible ? 'password' : 'text';
   els.authTogglePassword.textContent = visible ? 'Show' : 'Hide';
+});
+els.forgotPassword.addEventListener('click', () => {
+  setAuthMode('forgot', false);
+});
+els.backToLogin.addEventListener('click', () => {
+  state.auth.resetToken = '';
+  if (window.location.search.includes('reset=')) {
+    window.history.replaceState({}, document.title, '/admin/');
+  }
+  setAuthMode('login', false);
 });
 
 els.postList.addEventListener('click', event => {

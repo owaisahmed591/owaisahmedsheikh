@@ -21,9 +21,13 @@ const host = process.env.HOST || '127.0.0.1';
 const siteUrl = String(process.env.SITE_URL || 'https://owaisahmedsheikh-preview.pages.dev').replace(/\/+$/, '');
 const adminSessions = new Map();
 const loginAttempts = new Map();
+const passwordResets = new Map();
 const sessionTtlMs = 8 * 60 * 60 * 1000;
 const loginWindowMs = 15 * 60 * 1000;
 const maxLoginAttempts = 5;
+const resetWindowMs = 15 * 60 * 1000;
+const resetTtlMs = 30 * 60 * 1000;
+const maxResetAttempts = 3;
 
 const mime = {
   '.html': 'text/html; charset=utf-8',
@@ -146,6 +150,25 @@ function clearFailedLogins(req) {
   loginAttempts.delete(loginAttemptKey(req));
 }
 
+function checkResetRateLimit(req) {
+  const key = `reset:${loginAttemptKey(req)}`;
+  const now = Date.now();
+  const attempt = loginAttempts.get(key);
+  if (!attempt || attempt.resetAt <= now) return false;
+  return attempt.count >= maxResetAttempts;
+}
+
+function recordResetAttempt(req) {
+  const key = `reset:${loginAttemptKey(req)}`;
+  const now = Date.now();
+  const current = loginAttempts.get(key);
+  if (!current || current.resetAt <= now) {
+    loginAttempts.set(key, { count: 1, resetAt: now + resetWindowMs });
+    return;
+  }
+  current.count += 1;
+}
+
 function readAdminUsers() {
   if (!fs.existsSync(adminUsersPath)) return [];
   try {
@@ -170,10 +193,61 @@ function validatePasswordStrength(password) {
   return '';
 }
 
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('base64url');
   const hash = crypto.scryptSync(String(password), salt, 64).toString('base64url');
   return `scrypt$${salt}$${hash}`;
+}
+
+function hashResetToken(token) {
+  return crypto.createHash('sha256').update(String(token)).digest('hex');
+}
+
+function findPasswordResetTarget(users, identifier) {
+  const normalized = normalizeEmail(identifier);
+  if (!normalized) return null;
+  const target = users.find(user =>
+    String(user.username || '').toLowerCase() === normalized ||
+    normalizeEmail(user.email) === normalized
+  ) || (
+    process.env.ADMIN_EMAIL && normalizeEmail(process.env.ADMIN_EMAIL) === normalized
+      ? users.find(user => String(user.role || 'super_admin') === 'super_admin') || users[0]
+      : null
+  );
+  if (!target) return null;
+  const email = normalizeEmail(target.email || process.env.ADMIN_EMAIL);
+  return email && isValidEmail(email) ? { user: target, email } : null;
+}
+
+async function sendPasswordResetEmail(email, resetUrl) {
+  if (!process.env.RESEND_API_KEY || !process.env.ADMIN_RESET_FROM) {
+    console.log(`Password reset email not configured. Local reset link for ${email}: ${resetUrl}`);
+    return false;
+  }
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: process.env.ADMIN_RESET_FROM,
+      to: email,
+      reply_to: process.env.ADMIN_RESET_REPLY_TO || undefined,
+      subject: 'Reset your Content Studio password',
+      text: `Use this secure link to reset your Content Studio password. It expires in 30 minutes.\n\n${resetUrl}\n\nIf you did not request this, ignore this email.`,
+      html: `<p>Use this secure link to reset your Content Studio password. It expires in 30 minutes.</p><p><a href="${resetUrl}">Reset password</a></p><p>If you did not request this, ignore this email.</p>`
+    })
+  });
+  return response.ok;
 }
 
 function verifyPassword(password, passwordHash) {
@@ -1084,8 +1158,13 @@ async function handleAdminApi(req, res) {
     const incoming = await readJsonBody(req);
     const username = String(incoming.username || '').trim().toLowerCase();
     const password = String(incoming.password || '');
+    const email = normalizeEmail(incoming.email || process.env.ADMIN_EMAIL || '');
     if (!/^[a-z0-9._-]{3,60}$/.test(username)) {
       json(res, 400, { error: 'Username must use 3-60 letters, numbers, dots, dashes, or underscores.' });
+      return;
+    }
+    if (email && !isValidEmail(email)) {
+      json(res, 400, { error: 'Enter a valid recovery email address.' });
       return;
     }
     const passwordError = validatePasswordStrength(password);
@@ -1097,6 +1176,7 @@ async function handleAdminApi(req, res) {
     const user = {
       id: crypto.randomUUID(),
       username,
+      email: email || undefined,
       role: 'super_admin',
       passwordHash: hashPassword(password),
       createdAt: new Date().toISOString()
@@ -1107,6 +1187,73 @@ async function handleAdminApi(req, res) {
     json(res, 200, authResponse(session, false), {
       'Set-Cookie': sessionCookie(session.id, req, Math.floor(sessionTtlMs / 1000))
     });
+    return;
+  }
+
+  if (parts.length === 4 && parts[0] === 'api' && parts[1] === 'admin' && parts[2] === 'password-reset' && parts[3] === 'request' && req.method === 'POST') {
+    if (setupRequired) {
+      json(res, 200, { ok: true, message: 'If an admin account matches, a reset email will be sent.' });
+      return;
+    }
+    if (checkResetRateLimit(req)) {
+      json(res, 200, { ok: true, message: 'If an admin account matches, a reset email will be sent.' });
+      return;
+    }
+    recordResetAttempt(req);
+    const incoming = await readJsonBody(req);
+    const identifier = String(incoming.identifier || incoming.username || incoming.email || '').trim();
+    if (!identifier) {
+      json(res, 400, { error: 'Enter your admin username or recovery email.' });
+      return;
+    }
+    const target = findPasswordResetTarget(users, identifier);
+    if (target) {
+      const token = crypto.randomBytes(32).toString('base64url');
+      const tokenHash = hashResetToken(token);
+      const resetUrl = `${siteUrl}/admin/?reset=${encodeURIComponent(token)}`;
+      passwordResets.set(tokenHash, { userId: target.user.id, expiresAt: Date.now() + resetTtlMs });
+      const sent = await sendPasswordResetEmail(target.email, resetUrl);
+      appendAuditLog(target.user, sent ? 'admin.password_reset.email_sent' : 'admin.password_reset.email_not_configured', { emailConfigured: Boolean(process.env.RESEND_API_KEY && process.env.ADMIN_RESET_FROM) });
+    }
+    json(res, 200, { ok: true, message: 'If an admin account matches, a reset email will be sent.' });
+    return;
+  }
+
+  if (parts.length === 4 && parts[0] === 'api' && parts[1] === 'admin' && parts[2] === 'password-reset' && parts[3] === 'confirm' && req.method === 'POST') {
+    if (setupRequired) {
+      json(res, 400, { error: 'Create the first admin account before using password reset.' });
+      return;
+    }
+    const incoming = await readJsonBody(req);
+    const token = String(incoming.token || '').trim();
+    const password = String(incoming.password || '');
+    if (!token) {
+      json(res, 400, { error: 'Reset token is missing.' });
+      return;
+    }
+    const passwordError = validatePasswordStrength(password);
+    if (passwordError) {
+      json(res, 400, { error: passwordError });
+      return;
+    }
+    const tokenHash = hashResetToken(token);
+    const reset = passwordResets.get(tokenHash);
+    if (!reset || reset.expiresAt <= Date.now()) {
+      if (reset) passwordResets.delete(tokenHash);
+      json(res, 400, { error: 'This reset link is invalid or expired.' });
+      return;
+    }
+    const user = users.find(item => item.id === reset.userId);
+    if (!user) {
+      json(res, 400, { error: 'This reset link is invalid or expired.' });
+      return;
+    }
+    user.passwordHash = hashPassword(password);
+    user.updatedAt = new Date().toISOString();
+    writeAdminUsers(users);
+    passwordResets.delete(tokenHash);
+    appendAuditLog(user, 'admin.password_reset.confirmed', {});
+    json(res, 200, { ok: true, message: 'Password changed. Sign in with your new password.' });
     return;
   }
 
@@ -1123,7 +1270,7 @@ async function handleAdminApi(req, res) {
     const incoming = await readJsonBody(req);
     const username = String(incoming.username || '').trim().toLowerCase();
     const password = String(incoming.password || '');
-    const user = users.find(item => String(item.username || '').toLowerCase() === username);
+    const user = users.find(item => String(item.username || '').toLowerCase() === username || normalizeEmail(item.email) === username);
     if (!user || !verifyPassword(password, user.passwordHash)) {
       recordFailedLogin(req);
       appendAuditLog({ username, role: '' }, 'admin.login.failed', {});

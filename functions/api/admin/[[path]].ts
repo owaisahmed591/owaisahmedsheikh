@@ -5,11 +5,18 @@ type Env = {
   GITHUB_REPO?: string;
   GITHUB_BRANCH?: string;
   SITE_URL?: string;
+  ADMIN_EMAIL?: string;
+  RESEND_API_KEY?: string;
+  ADMIN_RESET_FROM?: string;
+  ADMIN_RESET_REPLY_TO?: string;
 };
 
 const SESSION_TTL_SECONDS = 8 * 60 * 60;
 const LOGIN_WINDOW_SECONDS = 15 * 60;
 const MAX_LOGIN_ATTEMPTS = 5;
+const RESET_TTL_SECONDS = 30 * 60;
+const RESET_WINDOW_SECONDS = 15 * 60;
+const MAX_RESET_ATTEMPTS = 3;
 const PBKDF2_ITERATIONS = 100000;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 8000;
@@ -62,6 +69,14 @@ function slugify(value: unknown) {
     .replace(/&/g, 'and')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function normalizeEmail(value: unknown) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 function absoluteSiteUrl(siteUrl: string, value = '') {
@@ -200,6 +215,15 @@ function bytesToBase64(bytes: Uint8Array) {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary);
+}
+
+function bytesToHex(bytes: Uint8Array) {
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return bytesToHex(new Uint8Array(digest));
 }
 
 function readUint16LE(bytes: Uint8Array, offset: number) {
@@ -489,6 +513,14 @@ async function loginLimited(request: Request, env: Env) {
   return false;
 }
 
+async function resetLimited(request: Request, env: Env) {
+  const key = `reset:${request.headers.get('CF-Connecting-IP') || 'unknown'}`;
+  const count = Number(await env.ADMIN_KV!.get(key) || 0);
+  if (count >= MAX_RESET_ATTEMPTS) return true;
+  await env.ADMIN_KV!.put(key, String(count + 1), { expirationTtl: RESET_WINDOW_SECONDS });
+  return false;
+}
+
 function authResponse(session: any, setupRequired: boolean) {
   return { authenticated: Boolean(session), setupRequired, user: session?.user || null, csrfToken: session?.csrf || '' };
 }
@@ -499,6 +531,42 @@ function validatePassword(password: string) {
     return 'Password must include uppercase, lowercase, number, and symbol.';
   }
   return '';
+}
+
+function findPasswordResetTarget(users: any[], identifier: string, env: Env) {
+  const normalized = normalizeEmail(identifier);
+  if (!normalized) return null;
+  const target = users.find(user =>
+    String(user.username || '').toLowerCase() === normalized ||
+    normalizeEmail(user.email) === normalized
+  ) || (
+    env.ADMIN_EMAIL && normalizeEmail(env.ADMIN_EMAIL) === normalized
+      ? users.find(user => String(user.role || 'super_admin') === 'super_admin') || users[0]
+      : null
+  );
+  if (!target) return null;
+  const email = normalizeEmail(target.email || env.ADMIN_EMAIL);
+  return email && isValidEmail(email) ? { user: target, email } : null;
+}
+
+async function sendPasswordResetEmail(env: Env, email: string, resetUrl: string) {
+  if (!env.RESEND_API_KEY || !env.ADMIN_RESET_FROM) return false;
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: env.ADMIN_RESET_FROM,
+      to: email,
+      reply_to: env.ADMIN_RESET_REPLY_TO || undefined,
+      subject: 'Reset your Content Studio password',
+      text: `Use this secure link to reset your Content Studio password. It expires in 30 minutes.\n\n${resetUrl}\n\nIf you did not request this, ignore this email.`,
+      html: `<p>Use this secure link to reset your Content Studio password. It expires in 30 minutes.</p><p><a href="${resetUrl}">Reset password</a></p><p>If you did not request this, ignore this email.</p>`
+    })
+  });
+  return response.ok;
 }
 
 function schemaFromPost(env: Env, post: any) {
@@ -560,21 +628,64 @@ export const onRequest = async ({ request, env, params }: { request: Request; en
       const body: any = await request.json();
       const username = String(body.username || '').trim().toLowerCase();
       const password = String(body.password || '');
+      const email = normalizeEmail(body.email || env.ADMIN_EMAIL || '');
       if (!/^[a-z0-9._-]{3,60}$/.test(username)) return json(400, { error: 'Invalid username.' });
+      if (email && !isValidEmail(email)) return json(400, { error: 'Enter a valid recovery email address.' });
       const passwordError = validatePassword(password);
       if (passwordError) return json(400, { error: passwordError });
-      const user = { id: crypto.randomUUID(), username, role: 'super_admin', passwordHash: await hashPassword(password), createdAt: new Date().toISOString() };
+      const user = { id: crypto.randomUUID(), username, email: email || undefined, role: 'super_admin', passwordHash: await hashPassword(password), createdAt: new Date().toISOString() };
       await putUsers(env, [user]);
       const session = await createSession(env, user);
       await audit(env, session.user, 'admin.setup', { username });
       return json(200, authResponse(session, false), { 'Set-Cookie': cookie('admin_session', session.id, SESSION_TTL_SECONDS) });
     }
 
+    if (request.method === 'POST' && route === 'password-reset/request') {
+      if (setupRequired) return json(200, { ok: true, message: 'If an admin account matches, a reset email will be sent.' });
+      if (await resetLimited(request, env)) return json(200, { ok: true, message: 'If an admin account matches, a reset email will be sent.' });
+      const body: any = await request.json();
+      const identifier = String(body.identifier || body.username || body.email || '').trim();
+      if (!identifier) return json(400, { error: 'Enter your admin username or recovery email.' });
+      const target = findPasswordResetTarget(users, identifier, env);
+      if (target) {
+        const token = crypto.randomUUID() + crypto.randomUUID();
+        const tokenHash = await sha256Hex(token);
+        const siteUrl = String(env.SITE_URL || 'https://owaisahmedsheikh-preview.pages.dev').replace(/\/+$/, '');
+        const resetUrl = `${siteUrl}/admin/?reset=${encodeURIComponent(token)}`;
+        await env.ADMIN_KV!.put(`password-reset:${tokenHash}`, JSON.stringify({ userId: target.user.id, createdAt: new Date().toISOString() }), { expirationTtl: RESET_TTL_SECONDS });
+        const sent = await sendPasswordResetEmail(env, target.email, resetUrl);
+        await audit(env, target.user, sent ? 'admin.password_reset.email_sent' : 'admin.password_reset.email_not_configured', { emailConfigured: Boolean(env.RESEND_API_KEY && env.ADMIN_RESET_FROM) });
+      }
+      return json(200, { ok: true, message: 'If an admin account matches, a reset email will be sent.' });
+    }
+
+    if (request.method === 'POST' && route === 'password-reset/confirm') {
+      if (setupRequired) return json(400, { error: 'Create the first admin account before using password reset.' });
+      const body: any = await request.json();
+      const token = String(body.token || '').trim();
+      const password = String(body.password || '');
+      if (!token) return json(400, { error: 'Reset token is missing.' });
+      const passwordError = validatePassword(password);
+      if (passwordError) return json(400, { error: passwordError });
+      const tokenHash = await sha256Hex(token);
+      const reset = await env.ADMIN_KV!.get(`password-reset:${tokenHash}`, 'json') as any;
+      if (!reset?.userId) return json(400, { error: 'This reset link is invalid or expired.' });
+      const user = users.find(item => item.id === reset.userId);
+      if (!user) return json(400, { error: 'This reset link is invalid or expired.' });
+      user.passwordHash = await hashPassword(password);
+      user.updatedAt = new Date().toISOString();
+      await putUsers(env, users);
+      await env.ADMIN_KV!.delete(`password-reset:${tokenHash}`);
+      await audit(env, user, 'admin.password_reset.confirmed');
+      return json(200, { ok: true, message: 'Password changed. Sign in with your new password.' });
+    }
+
     if (request.method === 'POST' && route === 'login') {
       if (setupRequired) return json(409, { error: 'Create the first admin user before logging in.' });
       if (await loginLimited(request, env)) return json(429, { error: 'Too many failed attempts. Try again later.' });
       const body: any = await request.json();
-      const user = users.find(item => String(item.username).toLowerCase() === String(body.username || '').toLowerCase());
+      const identifier = String(body.username || '').toLowerCase();
+      const user = users.find(item => String(item.username).toLowerCase() === identifier || normalizeEmail(item.email) === identifier);
       if (!user || !(await verifyPassword(String(body.password || ''), user.passwordHash))) return json(401, { error: 'Invalid username or password.' });
       const session = await createSession(env, user);
       await audit(env, session.user, 'admin.login.success');

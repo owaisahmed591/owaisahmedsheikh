@@ -24,18 +24,30 @@
       <p class="cms-eyebrow" id="authEyebrow">Secure Admin</p>
       <h1 id="authTitle">Sign in to Content Studio</h1>
       <p id="authIntro">Use your admin username and password to edit, publish, and rebuild blog content.</p>
-      <label>
-        Username
+      <label id="authUsernameLabel">
+        <span id="authUsernameText">Username or email</span>
         <input id="authUsername" name="username" autocomplete="username" required>
       </label>
-      <label>
-        Password
+      <label id="authEmailLabel" hidden>
+        <span>Recovery email</span>
+        <input id="authEmail" name="email" type="email" autocomplete="email">
+      </label>
+      <label id="authPasswordLabel">
+        <span id="authPasswordText">Password</span>
         <span class="cms-password-field">
           <input id="authPassword" name="password" type="password" autocomplete="current-password" required>
           <button id="authTogglePassword" type="button" aria-label="Show password">Show</button>
         </span>
       </label>
+      <label id="authConfirmPasswordLabel" hidden>
+        <span>Confirm password</span>
+        <input id="authConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password">
+      </label>
       <button class="cms-button cms-button-primary" id="authSubmit" type="submit">Sign in</button>
+      <div class="cms-auth-secondary">
+        <button class="cms-link-button" id="forgotPasswordButton" type="button">Forgot password?</button>
+        <button class="cms-link-button" id="backToLoginButton" type="button" hidden>Back to sign in</button>
+      </div>
       <p class="cms-auth-message" id="authMessage" role="status"></p>
     </form>
   </section>
