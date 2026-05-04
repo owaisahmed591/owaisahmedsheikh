@@ -2954,16 +2954,20 @@ body.cms-simple-mode .cms-row .cms-small-button {
 }
 
 /* Secure admin gate */
+body.cms-auth-checking .cms-shell,
 body.cms-auth-locked .cms-shell {
-  filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
   user-select: none;
 }
 
+.cms-auth-loading[hidden],
 .cms-auth-gate[hidden] {
   display: none;
 }
 
+.cms-auth-loading,
 .cms-auth-gate {
   position: fixed;
   inset: 0;
@@ -2975,6 +2979,58 @@ body.cms-auth-locked .cms-shell {
     radial-gradient(circle at 50% 20%, rgba(25, 196, 107, 0.10), transparent 34%),
     rgba(246, 248, 246, 0.94);
   backdrop-filter: blur(18px);
+}
+
+.cms-auth-loading {
+  background:
+    radial-gradient(circle at 48% 28%, rgba(25, 196, 107, 0.12), transparent 34%),
+    linear-gradient(180deg, #fbfcfb 0%, #f2f5f3 100%);
+}
+
+.cms-auth-loading-card {
+  width: min(430px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 34px 30px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #e2e8e4;
+  border-radius: 30px;
+  box-shadow: 0 30px 80px rgba(16, 24, 20, 0.12);
+}
+
+.cms-auth-loading-card h1 {
+  margin: 0;
+  color: #101814;
+  font-size: clamp(30px, 3.5vw, 42px);
+  line-height: 1.03;
+  letter-spacing: 0;
+}
+
+.cms-auth-loading-card p:not(.cms-eyebrow) {
+  max-width: 320px;
+  margin: 0;
+  color: #66736c;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.cms-auth-loader {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #101814 0 28%, transparent 30%),
+    conic-gradient(from 0deg, #101814, #19c46b, rgba(25, 196, 107, 0.16), #101814);
+  -webkit-mask: radial-gradient(circle, transparent 0 52%, #000 54%);
+  mask: radial-gradient(circle, transparent 0 52%, #000 54%);
+  animation: cmsSpin 0.9s linear infinite;
+}
+
+@keyframes cmsSpin {
+  to { transform: rotate(360deg); }
 }
 
 .cms-auth-card {
@@ -3103,4 +3159,10 @@ body.cms-auth-locked .cms-shell {
   font-size: 11.5px;
   line-height: 1.55;
   white-space: pre-wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cms-auth-loader {
+    animation: none;
+  }
 }

@@ -23,6 +23,7 @@ const state = {
 
 const els = {
   authGate: document.querySelector('#authGate'),
+  authLoading: document.querySelector('#authLoading'),
   authForm: document.querySelector('#authForm'),
   authEyebrow: document.querySelector('#authEyebrow'),
   authTitle: document.querySelector('#authTitle'),
@@ -174,10 +175,17 @@ function setAuthMessage(message, isError = false) {
   els.authMessage.style.color = isError ? '#b42318' : '';
 }
 
+function setAuthChecking(checking) {
+  document.body.classList.toggle('cms-auth-checking', Boolean(checking));
+  if (els.authLoading) els.authLoading.hidden = !checking;
+}
+
 function setAuthGate(visible, setupRequired = false) {
   if (!els.authGate) return;
+  setAuthChecking(false);
   els.authGate.hidden = !visible;
   document.body.classList.toggle('cms-auth-locked', visible);
+  document.body.classList.toggle('cms-authenticated', !visible);
   state.auth.setupRequired = setupRequired;
   if (visible) {
     els.authEyebrow.textContent = setupRequired ? 'First-time setup' : 'Secure Admin';
@@ -199,6 +207,7 @@ async function apiFetch(url, options = {}) {
   const response = await fetch(url, { ...options, headers });
   if (response.status === 401) {
     state.auth.authenticated = false;
+    setAuthChecking(false);
     setAuthGate(true, state.auth.setupRequired);
     setStatus('Admin login required.', true);
   }
@@ -1604,9 +1613,11 @@ async function loadLibrary() {
 }
 
 async function initializeAdmin() {
+  setAuthChecking(true);
   setStatus('Checking admin session...');
   const response = await fetch('/api/admin/session');
   if (!response.ok) {
+    setAuthChecking(false);
     setAuthGate(true, false);
     setStatus('Admin session unavailable.', true);
     return;
@@ -1614,6 +1625,7 @@ async function initializeAdmin() {
   const data = await response.json();
   applyAuthSession(data);
   if (!state.auth.authenticated) {
+    setAuthChecking(false);
     setStatus(data.setupRequired ? 'Create the first admin account.' : 'Sign in to edit posts.');
     return;
   }
@@ -1644,6 +1656,7 @@ async function submitAuth(event) {
   els.authPassword.value = '';
   applyAuthSession(data);
   setAuthMessage('');
+  setStatus('Loading publishing workspace...');
   await loadLibrary();
 }
 
@@ -2259,6 +2272,7 @@ window.cmsStudio = {
 window.dispatchEvent(new CustomEvent('cms:studio-ready'));
 
 initializeAdmin().catch(() => {
+  setAuthChecking(false);
   setAuthGate(true, false);
   setStatus('Run the local preview server to edit posts. Advanced CMS is still available for Git-based editing.', true);
 });

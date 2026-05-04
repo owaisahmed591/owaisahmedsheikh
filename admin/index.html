@@ -9,7 +9,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">
   <link rel="stylesheet" href="/admin/studio.css">
 </head>
-<body class="cms-simple-mode">
+<body class="cms-simple-mode cms-auth-checking">
+  <section class="cms-auth-loading" id="authLoading" aria-live="polite" aria-busy="true">
+    <div class="cms-auth-loading-card">
+      <span class="cms-auth-loader" aria-hidden="true"></span>
+      <p class="cms-eyebrow">Content Studio</p>
+      <h1>Checking secure session</h1>
+      <p>Loading your publishing workspace only after admin access is verified.</p>
+    </div>
+  </section>
+
   <section class="cms-auth-gate" id="authGate" hidden>
     <form class="cms-auth-card" id="authForm">
       <p class="cms-eyebrow" id="authEyebrow">Secure Admin</p>
