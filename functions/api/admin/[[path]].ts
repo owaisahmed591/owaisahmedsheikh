@@ -11,6 +11,16 @@ const SESSION_TTL_SECONDS = 8 * 60 * 60;
 const LOGIN_WINDOW_SECONDS = 15 * 60;
 const MAX_LOGIN_ATTEMPTS = 5;
 const PBKDF2_ITERATIONS = 100000;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 8000;
+const MAX_IMAGE_PIXELS = 25_000_000;
+
+type ImageInfo = {
+  mimeType: 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif';
+  extension: '.png' | '.jpg' | '.webp' | '.gif';
+  width: number;
+  height: number;
+};
 
 function json(status: number, body: Record<string, unknown>, headers: Record<string, string> = {}) {
   return Response.json(body, {
@@ -52,6 +62,12 @@ function slugify(value: unknown) {
     .replace(/&/g, 'and')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function absoluteSiteUrl(siteUrl: string, value = '') {
+  const raw = String(value || '').trim();
+  if (/^https?:\/\//i.test(raw)) return raw.replace(/\/+$/, '');
+  return `${siteUrl}${raw.startsWith('/') ? raw : `/${raw}`}`;
 }
 
 function stripQuotes(value: string) {
@@ -184,6 +200,123 @@ function bytesToBase64(bytes: Uint8Array) {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary);
+}
+
+function readUint16LE(bytes: Uint8Array, offset: number) {
+  return bytes[offset] | (bytes[offset + 1] << 8);
+}
+
+function readUint16BE(bytes: Uint8Array, offset: number) {
+  return (bytes[offset] << 8) | bytes[offset + 1];
+}
+
+function readUint24LE(bytes: Uint8Array, offset: number) {
+  return bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16);
+}
+
+function readUint32BE(bytes: Uint8Array, offset: number) {
+  return ((bytes[offset] << 24) >>> 0) + (bytes[offset + 1] << 16) + (bytes[offset + 2] << 8) + bytes[offset + 3];
+}
+
+function ascii(bytes: Uint8Array, offset: number, length: number) {
+  return Array.from(bytes.slice(offset, offset + length), byte => String.fromCharCode(byte)).join('');
+}
+
+function detectJpeg(bytes: Uint8Array): ImageInfo | null {
+  if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) return null;
+  let offset = 2;
+  while (offset + 9 < bytes.length) {
+    if (bytes[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+    const marker = bytes[offset + 1];
+    offset += 2;
+    if (marker === 0xd9 || marker === 0xda) break;
+    if (offset + 2 > bytes.length) break;
+    const length = readUint16BE(bytes, offset);
+    if (length < 2 || offset + length > bytes.length) break;
+    const isStartOfFrame = (
+      marker >= 0xc0 && marker <= 0xcf &&
+      ![0xc4, 0xc8, 0xcc].includes(marker)
+    );
+    if (isStartOfFrame && length >= 7) {
+      const height = readUint16BE(bytes, offset + 3);
+      const width = readUint16BE(bytes, offset + 5);
+      return { mimeType: 'image/jpeg', extension: '.jpg', width, height };
+    }
+    offset += length;
+  }
+  return null;
+}
+
+function detectPng(bytes: Uint8Array): ImageInfo | null {
+  const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (bytes.length < 24 || !signature.every((value, index) => bytes[index] === value)) return null;
+  if (ascii(bytes, 12, 4) !== 'IHDR') return null;
+  return { mimeType: 'image/png', extension: '.png', width: readUint32BE(bytes, 16), height: readUint32BE(bytes, 20) };
+}
+
+function detectGif(bytes: Uint8Array): ImageInfo | null {
+  const header = ascii(bytes, 0, 6);
+  if (bytes.length < 10 || !['GIF87a', 'GIF89a'].includes(header)) return null;
+  return { mimeType: 'image/gif', extension: '.gif', width: readUint16LE(bytes, 6), height: readUint16LE(bytes, 8) };
+}
+
+function detectWebp(bytes: Uint8Array): ImageInfo | null {
+  if (bytes.length < 30 || ascii(bytes, 0, 4) !== 'RIFF' || ascii(bytes, 8, 4) !== 'WEBP') return null;
+  let offset = 12;
+  while (offset + 8 <= bytes.length) {
+    const chunk = ascii(bytes, offset, 4);
+    const size = bytes[offset + 4] | (bytes[offset + 5] << 8) | (bytes[offset + 6] << 16) | (bytes[offset + 7] << 24);
+    const data = offset + 8;
+    if (chunk === 'VP8X' && data + 10 <= bytes.length) {
+      return {
+        mimeType: 'image/webp',
+        extension: '.webp',
+        width: readUint24LE(bytes, data + 4) + 1,
+        height: readUint24LE(bytes, data + 7) + 1
+      };
+    }
+    if (chunk === 'VP8 ' && data + 10 <= bytes.length && bytes[data + 3] === 0x9d && bytes[data + 4] === 0x01 && bytes[data + 5] === 0x2a) {
+      return {
+        mimeType: 'image/webp',
+        extension: '.webp',
+        width: readUint16LE(bytes, data + 6) & 0x3fff,
+        height: readUint16LE(bytes, data + 8) & 0x3fff
+      };
+    }
+    if (chunk === 'VP8L' && data + 5 <= bytes.length && bytes[data] === 0x2f) {
+      const b1 = bytes[data + 1];
+      const b2 = bytes[data + 2];
+      const b3 = bytes[data + 3];
+      const b4 = bytes[data + 4];
+      return {
+        mimeType: 'image/webp',
+        extension: '.webp',
+        width: 1 + (((b2 & 0x3f) << 8) | b1),
+        height: 1 + (((b4 & 0x0f) << 10) | (b3 << 2) | ((b2 & 0xc0) >> 6))
+      };
+    }
+    offset += 8 + size + (size % 2);
+  }
+  return null;
+}
+
+function detectImage(bytes: Uint8Array): ImageInfo | null {
+  return detectPng(bytes) || detectJpeg(bytes) || detectWebp(bytes) || detectGif(bytes);
+}
+
+function validateImage(file: File, bytes: Uint8Array) {
+  if (file.size > MAX_IMAGE_BYTES) return { error: 'Image must be 5MB or smaller.' };
+  const detected = detectImage(bytes);
+  if (!detected) return { error: 'Uploaded file is not a valid PNG, JPG, WEBP, or GIF image.' };
+  if (file.type && file.type !== detected.mimeType) return { error: 'Image MIME type does not match the uploaded file content.' };
+  if (!detected.width || !detected.height) return { error: 'Image dimensions could not be read.' };
+  if (detected.width > MAX_IMAGE_DIMENSION || detected.height > MAX_IMAGE_DIMENSION || detected.width * detected.height > MAX_IMAGE_PIXELS) {
+    return { error: 'Image dimensions are too large for safe upload.' };
+  }
+  return { image: detected };
 }
 
 function base64ToString(value: string) {
@@ -371,8 +504,12 @@ function validatePassword(password: string) {
 function schemaFromPost(env: Env, post: any) {
   const siteUrl = String(env.SITE_URL || 'https://owaisahmedsheikh-preview.pages.dev').replace(/\/+$/, '');
   const slug = slugify(post.slug || post.title);
-  const canonical = post.canonical || `${siteUrl}/blog/${slug}`;
-  const faqs = (post.faqItems || []).filter((item: any) => item.question && item.answer);
+  const canonical = post.canonical ? absoluteSiteUrl(siteUrl, post.canonical) : `${siteUrl}/blog/${slug}`;
+  const rawFaqs = Array.isArray(post.faqItems) ? post.faqItems : Array.isArray(post.faqs) ? post.faqs : [];
+  const faqs = rawFaqs
+    .map((item: any) => ({ question: String(item.question || '').trim(), answer: String(item.answer || '').trim() }))
+    .filter((item: any) => item.question && item.answer);
+  const imageUrl = absoluteSiteUrl(siteUrl, post.image || '/og-image.png');
   const schemas: any[] = [
     { '@context': 'https://schema.org', '@type': 'Organization', name: 'Owais Ahmed Sheikh', url: siteUrl, logo: { '@type': 'ImageObject', url: `${siteUrl}/brand-mark.svg` } },
     { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Owais Ahmed Sheikh', url: siteUrl },
@@ -381,7 +518,7 @@ function schemaFromPost(env: Env, post: any) {
       '@type': post.schemaType || 'BlogPosting',
       headline: post.title,
       description: post.metaDescription || post.excerpt,
-      image: { '@type': 'ImageObject', url: post.image?.startsWith('http') ? post.image : `${siteUrl}${post.image || '/og-image.png'}`, description: post.imageAlt || undefined },
+      image: { '@type': 'ImageObject', url: imageUrl, description: post.imageAlt || undefined },
       author: { '@type': 'Person', name: post.author || 'Owais Ahmed Sheikh', url: `${siteUrl}/about` },
       publisher: { '@type': 'Organization', name: 'Owais Ahmed Sheikh', logo: { '@type': 'ImageObject', url: `${siteUrl}/brand-mark.svg` } },
       datePublished: post.date,
@@ -482,20 +619,20 @@ export const onRequest = async ({ request, env, params }: { request: Request; en
       const form = await request.formData();
       const file = form.get('image');
       if (!(file instanceof File)) return json(400, { error: 'No image file was uploaded.' });
-      if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type)) return json(400, { error: 'Only PNG, JPG, WEBP, and GIF images are allowed.' });
-      if (file.size > 5 * 1024 * 1024) return json(400, { error: 'Image must be 5MB or smaller.' });
-      const ext = file.type === 'image/jpeg' ? '.jpg' : `.${file.type.split('/')[1]}`;
-      const name = `${slugify(file.name.replace(/\.[^.]+$/, '')) || 'image'}-${Date.now()}${ext}`;
       const bytes = new Uint8Array(await file.arrayBuffer());
+      const validation = validateImage(file, bytes);
+      if (validation.error || !validation.image) return json(400, { error: validation.error || 'Invalid image upload.' });
+      const image = validation.image;
+      const name = `${slugify(file.name.replace(/\.[^.]+$/, '')) || 'image'}-${Date.now()}${image.extension}`;
       let url = `/uploads/blog/${name}`;
       if (env.MEDIA_BUCKET) {
-        await env.MEDIA_BUCKET.put(`uploads/blog/${name}`, bytes, { httpMetadata: { contentType: file.type } });
+        await env.MEDIA_BUCKET.put(`uploads/blog/${name}`, bytes, { httpMetadata: { contentType: image.mimeType } });
         url = `/uploads/blog/${name}`;
       } else {
         await writeGithubBase64File(env, `uploads/blog/${name}`, bytesToBase64(bytes), `Upload media ${name}`);
       }
       const media = await env.ADMIN_KV!.get('media-list', 'json') as any[] || [];
-      const item = { name, url, thumbnailUrl: url, mimeType: file.type, size: file.size, updated: new Date().toISOString() };
+      const item = { name, url, thumbnailUrl: url, mimeType: image.mimeType, size: file.size, width: image.width, height: image.height, updated: new Date().toISOString() };
       media.unshift(item);
       await env.ADMIN_KV!.put('media-list', JSON.stringify(media.slice(0, 500)));
       await audit(env, session.user, 'media.upload', { filename: name, size: file.size });
@@ -534,6 +671,7 @@ export const onRequest = async ({ request, env, params }: { request: Request; en
 
     return json(404, { error: 'Admin API route not found.' });
   } catch (error: any) {
-    return json(500, { error: error?.message || 'Admin API error.' });
+    console.error(error);
+    return json(500, { error: 'Admin API error. Check deployment logs.' });
   }
 };
